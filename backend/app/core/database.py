@@ -4,7 +4,7 @@ from .config import settings # settings.DATABASE_URL
 
 # 1. Engine using DATABASE_URL from config (Represents the core interface to the database)
 engine = create_engine(
-    settings.DATABASE_URL,
+    settings.DIRECT_URL,
     echo=True,               # log SQL to stdout (dev only)
     future=True,              # use SQLAlchemy 2.0 style
     pool_pre_ping=True

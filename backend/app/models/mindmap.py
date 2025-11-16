@@ -12,3 +12,4 @@ class MindMap(Base):
 
     creator = relationship("User", back_populates="mindmaps")
     nodes = relationship("Node", back_populates="mindmap")
+    collaborators = relationship("Collaborator", back_populates="mindmap", cascade="all, delete-orphan")

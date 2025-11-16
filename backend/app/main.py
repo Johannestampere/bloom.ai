@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 import uvicorn
 import os
 from datetime import datetime, timezone
+from app.routers import collaborators
 
 # Import routers
 from .routers import mindmaps, nodes, votes
@@ -75,6 +76,8 @@ async def internal_server_error_handler(request: Request, exc: Exception):
 app.include_router(mindmaps.router)
 app.include_router(nodes.router)
 app.include_router(votes.router)
+
+app.include_router(collaborators.router)
 
 
 # Root endpoints

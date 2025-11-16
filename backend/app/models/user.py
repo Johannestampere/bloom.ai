@@ -16,3 +16,4 @@ class User(Base):
     mindmaps = relationship("MindMap", back_populates="creator")
     nodes = relationship("Node", back_populates="creator")
     votes = relationship("Vote", back_populates="user")
+    collaborations = relationship("Collaborator", foreign_keys="[Collaborator.user_id]", back_populates="user")

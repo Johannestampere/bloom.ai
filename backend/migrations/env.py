@@ -6,17 +6,19 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 
 # Make sure "app/" is on Python path
-sys.path.append(os.getcwd())
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 # Import settings and Base metadata
-from backend.app.core.database import settings      # reads .env
-from backend.app.core.database import Base
+from app.core.database import settings      # reads .env
+from app.core.database import Base
 
 # Import all models -> tables are registered
-import backend.app.models.user
-import backend.app.models.mindmap
-import backend.app.models.node
-import backend.app.models.vote
+import app.models.collaborator
+import app.models.user
+import app.models.mindmap
+import app.models.node
+import app.models.vote
 
 # Provides access to values within alembic.ini
 config = context.config
