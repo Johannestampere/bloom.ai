@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from typing import List
 from ..core.database import get_db
-from ..models import MindMap, Node, Vote
+from ..models import MindMap, Node, Vote, Collaborator
 from ..schemas.mindmap import (
     MindMapCreate, MindMapUpdate, MindMapResponse,
     MindMapListResponse, SuccessResponse
@@ -84,13 +84,14 @@ async def get_all_mindmaps(
         result = []
         for mindmap in mindmaps:
             node_count = db.query(Node).filter(Node.mindmap_id == mindmap.id).count()
+            total_collaborators = db.query(Collaborator).filter(Collaborator.mindmap_id == mindmap.id).count()
 
             mindmap_dict = {
                 "id": mindmap.id,
                 "title": mindmap.name,
-                "node_count": node_count, # JOHANNESEL POLE
-                "total_collaborators": 1, # JOHANNESEL POLE
-                "created_at": mindmap.created_at # JOHANNESEL POLE
+                "node_count": node_count,
+                "total_collaborators": total_collaborators,
+                "created_at": mindmap.created_at
             }
             result.append(MindMapListResponse(**mindmap_dict))
 

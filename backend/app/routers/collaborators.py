@@ -23,7 +23,6 @@ from ..schemas.collaborator import (
 
 router = APIRouter(prefix="/api", tags=["collaborators"])
 
-
 # Helper function to check if user owns or has access to mindmap
 def check_mindmap_access(
         mindmap_id: int,
