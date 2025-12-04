@@ -56,6 +56,8 @@ async def create_node(
             content=node_data.title,
             mindmap_id=mindmap_id,
             parent_id=node_data.parent_id if node_data.parent_id else None,
+            x_position=node_data.x_position, # questionable, backend has to calculate the x and y positions
+            y_position=node_data.y_position, # same thing
             created_by=current_user_id
         )
 
@@ -68,8 +70,8 @@ async def create_node(
             "id": new_node.id,
             "title": new_node.content,
             "content": new_node.content,
-            "x_position": node_data.x_position,
-            "y_position": node_data.y_position,
+            "x_position": new_node.x_position,
+            "y_position": new_node.y_position,
             "parent_id": new_node.parent_id,
             "mindmap_id": new_node.mindmap_id,
             "vote_count": 0,
@@ -123,8 +125,8 @@ async def get_mindmap_nodes(
                 "id": node.id,
                 "title": node.content,
                 "content": node.content,
-                "x_position": 0.0,
-                "y_position": 0.0,
+                "x_position": node.x_position,
+                "y_position": node.y_position,
                 "parent_id": node.parent_id,
                 "mindmap_id": node.mindmap_id,
                 "vote_count": len(votes),
@@ -174,8 +176,8 @@ async def get_node(
             "id": node.id,
             "title": node.content,
             "content": node.content,
-            "x_position": 0.0,
-            "y_position": 0.0,
+            "x_position": node.x_position,
+            "y_position": node.y_position,
             "parent_id": node.parent_id,
             "mindmap_id": node.mindmap_id,
             "vote_count": len(votes),
@@ -242,6 +244,10 @@ async def update_node(
             node.content = node_data.title
         if node_data.content:
             node.content = node_data.content
+        if node_data.x_position is not None:
+            node.x_position = node_data.x_position
+        if node_data.y_position is not None:
+            node.y_position = node_data.y_position
         if node_data.parent_id is not None:
             node.parent_id = node_data.parent_id if node_data.parent_id != 0 else None
 
@@ -256,8 +262,8 @@ async def update_node(
             "id": node.id,
             "title": node.content,
             "content": node.content,
-            "x_position": node_data.x_position or 0.0,
-            "y_position": node_data.y_position or 0.0,
+            "x_position": node.x_position,
+            "y_position": node.y_position,
             "parent_id": node.parent_id,
             "mindmap_id": node.mindmap_id,
             "vote_count": len(votes),
