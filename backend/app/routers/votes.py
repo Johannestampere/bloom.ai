@@ -24,7 +24,7 @@ async def vote_on_node(
         # Verify node exists and user has access through mindmap
         node = db.query(Node).join(MindMap).filter(
             Node.id == node_id,
-            MindMap.created_by == current_user_id
+            MindMap.owner_id == current_user_id
         ).first()
 
         if not node:
@@ -88,7 +88,7 @@ async def remove_vote_from_node(
         # Verify node exists and user has access through mindmap
         node = db.query(Node).join(MindMap).filter(
             Node.id == node_id,
-            MindMap.created_by == current_user_id
+            MindMap.owner_id == current_user_id
         ).first()
 
         if not node:
@@ -140,7 +140,7 @@ async def get_node_votes(
         # Verify node exists and user has access through mindmap
         node = db.query(Node).join(MindMap).filter(
             Node.id == node_id,
-            MindMap.created_by == current_user_id
+            MindMap.owner_id == current_user_id
         ).first()
 
         if not node:
@@ -187,7 +187,7 @@ async def get_mindmap_vote_summary(
         # Verify mindmap ownership
         mindmap = db.query(MindMap).filter(
             MindMap.id == mindmap_id,
-            MindMap.created_by == current_user_id
+            MindMap.owner_id == current_user_id
         ).first()
 
         if not mindmap:
@@ -244,7 +244,7 @@ async def get_popular_nodes(
         # Verify mindmap ownership
         mindmap = db.query(MindMap).filter(
             MindMap.id == mindmap_id,
-            MindMap.created_by == current_user_id
+            MindMap.owner_id == current_user_id
         ).first()
 
         if not mindmap:
@@ -312,7 +312,7 @@ async def get_vote_analytics(
         # Verify mindmap ownership
         mindmap = db.query(MindMap).filter(
             MindMap.id == mindmap_id,
-            MindMap.created_by == current_user_id
+            MindMap.owner_id == current_user_id
         ).first()
 
         if not mindmap:

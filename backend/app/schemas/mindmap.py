@@ -25,8 +25,6 @@ class NodeBase(BaseModel):
 
 class MindMapBase(BaseModel):
     title: str
-    description: Optional[str] = None
-    main_theme: Optional[str] = None
 
     @classmethod
     @field_validator('title')
@@ -75,8 +73,6 @@ class NodeUpdate(BaseModel):
 
 class MindMapUpdate(BaseModel):
     title: Optional[str] = None
-    description: Optional[str] = None
-    main_theme: Optional[str] = None
 
     @classmethod
     @field_validator('title')
@@ -95,7 +91,6 @@ class NodeResponse(NodeBase):
     vote_count: int = 0
     user_votes: List[UUID] = []  # List of user UUIDs who voted
     created_at: datetime
-    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -113,11 +108,10 @@ class VoteResponse(VoteBase):
 
 class MindMapResponse(MindMapBase):
     id: int
-    user_id: UUID  # Changed to UUID to match your User model
+    owner_id: UUID
     nodes: List[NodeResponse] = []
     total_collaborators: int = 0
     created_at: datetime
-    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -126,12 +120,9 @@ class MindMapResponse(MindMapBase):
 class MindMapListResponse(BaseModel):
     id: int
     title: str
-    description: Optional[str] = None
-    main_theme: Optional[str] = None
     node_count: int = 0
     total_collaborators: int = 0
     created_at: datetime
-    updated_at: datetime
 
     class Config:
         from_attributes = True

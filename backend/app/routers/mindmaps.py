@@ -26,8 +26,8 @@ async def create_mindmap(
     try:
         # Create a new mindmap (using model fields)
         new_mindmap = MindMap(
-            name=mindmap_data.title,  # Your model uses 'name', schema uses 'title'
-            created_by=current_user_id  # Your model uses 'created_by'
+            name=mindmap_data.title,
+            owner_id=current_user_id
         )
 
         db.add(new_mindmap)
@@ -77,7 +77,7 @@ async def get_all_mindmaps(
     """
     try:
         mindmaps = db.query(MindMap).filter(
-            MindMap.created_by == current_user_id
+            MindMap.owner_id == current_user_id
         ).offset(skip).limit(limit).all()
 
         # Add node count to each mindmap
@@ -119,7 +119,7 @@ async def get_mindmap_data(
             joinedload(MindMap.nodes)
         ).filter(
             MindMap.id == mindmap_id,
-            MindMap.created_by == current_user_id
+            MindMap.owner_id == current_user_id
         ).first()
 
         if not mindmap:
@@ -151,7 +151,7 @@ async def get_mindmap_data(
             "id": mindmap.id,
             "title": mindmap.name,
             "nodes": nodes_response,
-            "created_by": mindmap.created_by,
+            "owner_id": mindmap.owner_id,
             "created_at": mindmap.created_at
         }
 
@@ -180,7 +180,7 @@ async def update_mindmap(
         # Find the mindmap
         mindmap = db.query(MindMap).filter(
             MindMap.id == mindmap_id,
-            MindMap.created_by == current_user_id
+            MindMap.owner_id == current_user_id
         ).first()
 
         if not mindmap:
@@ -200,7 +200,7 @@ async def update_mindmap(
         response_data = {
             "id": mindmap.id,
             "title": mindmap.name,
-            "user_id": mindmap.created_by,
+            "owner_id": mindmap.owner_id,
             "nodes": [],
             "total_collaborators": 1,
             "created_at": mindmap.created_at
@@ -231,7 +231,7 @@ async def delete_mindmap(
         # Find the mindmap
         mindmap = db.query(MindMap).filter(
             MindMap.id == mindmap_id,
-            MindMap.created_by == current_user_id  # Use 'created_by'
+            MindMap.owner_id == current_user_id
         ).first()
 
         if not mindmap:

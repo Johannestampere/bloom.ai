@@ -48,7 +48,7 @@ def test_trigger_working():
             if user_in_db:
                 mindmap = MindMap(
                     name=f"Test Mindmap {test_id}",
-                    created_by=user_in_db.id
+                owner_id=user_in_db.id
                 )
                 session.add(mindmap)
                 session.commit()

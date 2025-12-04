@@ -29,7 +29,7 @@ async def create_node(
         # Verify mindmap ownership
         mindmap = db.query(MindMap).filter(
             MindMap.id == mindmap_id,
-            MindMap.created_by == current_user_id
+            MindMap.owner_id == current_user_id
         ).first()
 
         if not mindmap:
@@ -102,7 +102,7 @@ async def get_mindmap_nodes(
         # Verify mindmap ownership
         mindmap = db.query(MindMap).filter(
             MindMap.id == mindmap_id,
-            MindMap.created_by == current_user_id
+            MindMap.owner_id == current_user_id
         ).first()
 
         if not mindmap:
@@ -157,7 +157,7 @@ async def get_node(
         # Get node and verify ownership through mindmap
         node = db.query(Node).join(MindMap).filter(
             Node.id == node_id,
-            MindMap.created_by == current_user_id
+            MindMap.owner_id == current_user_id
         ).first()
 
         if not node:
@@ -208,7 +208,7 @@ async def update_node(
         # Get node and verify ownership through mindmap
         node = db.query(Node).join(MindMap).filter(
             Node.id == node_id,
-            MindMap.created_by == current_user_id
+            MindMap.owner_id == current_user_id
         ).first()
 
         if not node:
@@ -290,7 +290,7 @@ async def delete_node(
         # Get node and verify ownership through mindmap
         node = db.query(Node).join(MindMap).filter(
             Node.id == node_id,
-            MindMap.created_by == current_user_id
+            MindMap.owner_id == current_user_id
         ).first()
 
         if not node:
@@ -335,7 +335,7 @@ async def generate_ai_ideas(
         # Get node and verify ownership
         node = db.query(Node).join(MindMap).filter(
             Node.id == node_id,
-            MindMap.created_by == current_user_id
+            MindMap.owner_id == current_user_id
         ).first()
 
         if not node:

@@ -38,7 +38,7 @@ def test_models():
         # Test creating a mindmap
         test_mindmap = MindMap(
             name="Test Mindmap",
-            created_by=test_user.id
+            owner_id=test_user.id
         )
         session.add(test_mindmap)
         session.commit()
