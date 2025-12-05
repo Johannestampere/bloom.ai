@@ -39,6 +39,7 @@ async def create_mindmap(
             title=mindmap_data.title,
             content=mindmap_data.title,
             mindmap_id=new_mindmap.id,
+            order_index=0,
             x_position=0.0,
             y_position=0.0,
             created_by=current_user_id
@@ -133,7 +134,7 @@ async def get_mindmap_data(
 
         # Convert nodes to a response format
         nodes_response = []
-        for node in mindmap.nodes:
+        for node in sorted(mindmap.nodes, key=lambda n: n.order_index):
             votes = db.query(Vote).filter(Vote.node_id == node.id).all()
 
             node_data = {
@@ -144,6 +145,7 @@ async def get_mindmap_data(
                 "y_position": node.y_position,
                 "parent_id": node.parent_id,
                 "mindmap_id": node.mindmap_id,
+                "order_index": node.order_index,
                 "vote_count": len(votes),
                 "user_votes": [vote.user_id for vote in votes],
                 "created_at": node.created_at

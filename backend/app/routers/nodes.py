@@ -1,5 +1,6 @@
 # routers/nodes.py
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import List
 from ..core.database import get_db
@@ -51,11 +52,20 @@ async def create_node(
                     detail="Parent node not found"
                 )
 
+        # Compute the next order_index among siblings (same parent within this mindmap)
+        parent_id = node_data.parent_id if node_data.parent_id else None
+        max_order = db.query(func.max(Node.order_index)).filter(
+            Node.mindmap_id == mindmap_id,
+            Node.parent_id == parent_id
+        ).scalar()
+        next_order_index = (max_order + 1) if max_order is not None else 0
+
         new_node = Node(
             title=node_data.title,
             content=node_data.content,
             mindmap_id=mindmap_id,
-            parent_id=node_data.parent_id if node_data.parent_id else None,
+            parent_id=parent_id,
+            order_index=next_order_index,
             x_position=node_data.x_position, # questionable, backend has to calculate the x and y positions
             y_position=node_data.y_position, # same thing
             created_by=current_user_id
@@ -74,6 +84,7 @@ async def create_node(
             "y_position": new_node.y_position,
             "parent_id": new_node.parent_id,
             "mindmap_id": new_node.mindmap_id,
+            "order_index": new_node.order_index,
             "vote_count": 0,
             "user_votes": [],
             "created_at": new_node.created_at
@@ -113,8 +124,10 @@ async def get_mindmap_nodes(
                 detail="Mindmap not found"
             )
 
-        # Get all nodes for this mindmap
-        nodes = db.query(Node).filter(Node.mindmap_id == mindmap_id).all()
+        # Get all nodes for this mindmap, ordered by order_index for stable layout
+        nodes = db.query(Node).filter(
+            Node.mindmap_id == mindmap_id
+        ).order_by(Node.order_index).all()
 
         # Convert to response format
         result = []
@@ -129,6 +142,7 @@ async def get_mindmap_nodes(
                 "y_position": node.y_position,
                 "parent_id": node.parent_id,
                 "mindmap_id": node.mindmap_id,
+                "order_index": node.order_index,
                 "vote_count": len(votes),
                 "user_votes": [vote.user_id for vote in votes],
                 "created_at": node.created_at
@@ -180,6 +194,7 @@ async def get_node(
             "y_position": node.y_position,
             "parent_id": node.parent_id,
             "mindmap_id": node.mindmap_id,
+            "order_index": node.order_index,
             "vote_count": len(votes),
             "user_votes": [vote.user_id for vote in votes],
             "created_at": node.created_at
@@ -250,6 +265,8 @@ async def update_node(
             node.y_position = node_data.y_position
         if node_data.parent_id is not None:
             node.parent_id = node_data.parent_id if node_data.parent_id != 0 else None
+        if node_data.order_index is not None:
+            node.order_index = node_data.order_index
 
         db.commit()
         db.refresh(node)
@@ -266,6 +283,7 @@ async def update_node(
             "y_position": node.y_position,
             "parent_id": node.parent_id,
             "mindmap_id": node.mindmap_id,
+            "order_index": node.order_index,
             "vote_count": len(votes),
             "user_votes": [vote.user_id for vote in votes],
             "created_at": node.created_at

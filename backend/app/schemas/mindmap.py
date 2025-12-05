@@ -7,6 +7,7 @@ from uuid import UUID
 
 # BASE SCHEMAS
 
+# 
 class NodeBase(BaseModel):
     title: str
     content: Optional[str] = None
@@ -61,6 +62,7 @@ class NodeUpdate(BaseModel):
     x_position: Optional[float] = None
     y_position: Optional[float] = None
     parent_id: Optional[int] = None
+    order_index: Optional[int] = None
 
     @classmethod
     @field_validator('title')
@@ -88,6 +90,7 @@ class MindMapUpdate(BaseModel):
 class NodeResponse(NodeBase):
     id: int
     mindmap_id: int
+    order_index: int # This determines how children of the same parent node are ordered in the UI
     vote_count: int = 0
     user_votes: List[UUID] = []  # List of user UUIDs who voted
     created_at: datetime
