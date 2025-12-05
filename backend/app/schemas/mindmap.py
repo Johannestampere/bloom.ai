@@ -43,7 +43,6 @@ class VoteBase(BaseModel):
 
 # this is what the frontend sends on node creation
 class NodeCreate(BaseModel):
-    mindmap_id: int
     title: str
     content: Optional[str] = None
     parent_id: int
