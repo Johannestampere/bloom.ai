@@ -1,5 +1,5 @@
 # schemas/mindmap.py
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, Field
 from typing import List, Optional
 from datetime import datetime
 from uuid import UUID
@@ -7,7 +7,6 @@ from uuid import UUID
 
 # BASE SCHEMAS
 
-# 
 class NodeBase(BaseModel):
     title: str
     content: Optional[str] = None
@@ -42,8 +41,12 @@ class VoteBase(BaseModel):
 
 # CREATE SCHEMAS
 
-class NodeCreate(NodeBase):
-    pass
+# this is what the frontend sends on node creation
+class NodeCreate(BaseModel):
+    mindmap_id: int
+    title: str
+    content: Optional[str] = None
+    parent_id: int
 
 
 class MindMapCreate(MindMapBase):
@@ -87,12 +90,32 @@ class MindMapUpdate(BaseModel):
 
 # RESPONSE SCHEMAS
 
-class NodeResponse(NodeBase):
+# this is what the backend send to the frontend on node creation
+#   includes the backend-calculated order_index, X and Y positions
+class NodeCreateResponse(BaseModel):
     id: int
     mindmap_id: int
-    order_index: int # This determines how children of the same parent node are ordered in the UI
-    vote_count: int = 0
-    user_votes: List[UUID] = []  # List of user UUIDs who voted
+    x_position: float
+    y_position: float
+    order_index: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+# this is what the backend send to the frontend on node retrieval
+#   includes more information like vote_count, user_votes
+class NodeResponse(BaseModel):
+    id: int
+    mindmap_id: int
+    parent_id: Optional[int]
+    title: str
+    content: Optional[str]
+    x_position: float
+    y_position: float
+    order_index: int
+    vote_count: int
+    user_votes: List[UUID] = Field(default_factory=list)
     created_at: datetime
 
     class Config:

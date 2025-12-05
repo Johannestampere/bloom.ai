@@ -6,7 +6,7 @@ from typing import List
 from ..core.database import get_db
 from ..models import MindMap, Node, Vote
 from ..schemas.mindmap import (
-    NodeCreate, NodeUpdate, NodeResponse,
+    NodeCreate, NodeUpdate, NodeCreateResponse, NodeResponse,
     SuccessResponse, AIIdeaResponse
 )
 from ..middleware.auth import get_current_user_id
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/api", tags=["nodes"])
 
 # NODE CRUD OPERATIONS
 
-@router.post("/mindmaps/{mindmap_id}/nodes", response_model=NodeResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/mindmaps/{mindmap_id}/nodes", response_model=NodeCreateResponse, status_code=status.HTTP_201_CREATED)
 async def create_node(
         mindmap_id: int,
         node_data: NodeCreate,
@@ -66,8 +66,9 @@ async def create_node(
             mindmap_id=mindmap_id,
             parent_id=parent_id,
             order_index=next_order_index,
-            x_position=node_data.x_position, # questionable, backend has to calculate the x and y positions
-            y_position=node_data.y_position, # same thing
+            # TODO: implement smarter backend layout; for now default to origin
+            x_position=0.0,
+            y_position=0.0,
             created_by=current_user_id
         )
 
@@ -75,22 +76,16 @@ async def create_node(
         db.commit()
         db.refresh(new_node)
 
-        # Convert to response format
         response_data = {
             "id": new_node.id,
-            "title": new_node.title,
-            "content": new_node.content,
+            "mindmap_id": new_node.mindmap_id,
             "x_position": new_node.x_position,
             "y_position": new_node.y_position,
-            "parent_id": new_node.parent_id,
-            "mindmap_id": new_node.mindmap_id,
             "order_index": new_node.order_index,
-            "vote_count": 0,
-            "user_votes": [],
             "created_at": new_node.created_at
         }
 
-        return NodeResponse(**response_data)
+        return NodeCreateResponse(**response_data)
 
     except HTTPException:
         raise
