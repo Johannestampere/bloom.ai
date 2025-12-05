@@ -6,7 +6,7 @@
 # compute_layout: compute the canonical (x, y) coordinates for every node in the mindmap
 # apply_layout: persist the computed layout positions into the database
 
-from typing import Dict, Tuple, Any
+from typing import Dict, Tuple, Any, List
 from sqlalchemy.orm import Session
 from ..models import Node
 
@@ -32,16 +32,56 @@ def load_tree(db: Session, mindmap_id: int) -> Any:
     since tree-based layout algorithms require knowing the full hierarchy of parents
     and children.
     """
-    nodes = db.query(Node).filter(Node.mindmap_id == mindmap_id).all()
-    return nodes
+    nodes: List[Node] = db.query(Node).filter(Node.mindmap_id == mindmap_id).all()
 
+    if not nodes:
+        return {
+            "root": None,
+            "children": {},
+            "depth": {},
+            "nodes": {}
+        }
+    
+    nodes_by_id: Dict[int, Node] = {node.id: node for node in nodes}
+    root = next((node for node in nodes if node.parent_id is None), None)
+
+    if not root:
+        raise ValueError("No root node found for mindmap")
+    
+    children: Dict[int, List[Node]] = {node.id: [] for node in nodes}
+
+    for node in nodes:
+        if node.parent_id is not None:
+            children[node.parent_id].append(node)
+
+    for parent_id in children:
+        children[parent_id].sort(key=lambda n: n.order_index)
+    
+    depth: Dict[int, int] = {root.id: 0}
+    queue = [root]
+
+    while queue:
+        current = queue.pop(0)
+        current_depth = depth[current.id]
+
+        for child in children[current.id]:
+            depth[child.id] = current_depth + 1
+            queue.append(child)
+
+    # Return full tree structure
+    return {
+        "root": root,
+        "children": children,
+        "depth": depth,
+        "nodes": nodes_by_id
+    }
 
 def compute_layout(tree: Any) -> Dict[int, Tuple[float, float]]:
     """
     Compute the canonical (x, y) coordinates for every node in the mindmap.
 
     Input:
-        The output of load_tree(), containing a full hierarchyv(root node, children mapping, depth info, etc)
+        The output of load_tree(), containing a full hierarchy (root node, children mapping, depth info, etc)
 
     Output:
         A dictionary mapping: node_id -> (x_position, y_position)
@@ -55,7 +95,6 @@ def compute_layout(tree: Any) -> Dict[int, Tuple[float, float]]:
     """
     positions: Dict[int, Tuple[float, float]] = {} # node_id -> (x_position, y_position)
     return positions
-
 
 def apply_layout(db: Session, positions: Dict[int, Tuple[float, float]]) -> None:
     """
