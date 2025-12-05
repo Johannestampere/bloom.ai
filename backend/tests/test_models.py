@@ -47,7 +47,8 @@ def test_models():
         # Test creating a node
         test_node = Node(
             mindmap_id=test_mindmap.id,
-            content="Test Node",
+            title="Test Node",
+            content="Test Node content",
             created_by=test_user.id
         )
         session.add(test_node)

@@ -199,17 +199,17 @@ async def get_mindmap_vote_summary(
         # Get vote summary for all nodes in this mindmap
         vote_summary = db.query(
             Node.id,
-            Node.content,
+            Node.title,
             db.func.count(Vote.user_id).label('vote_count')
         ).outerjoin(Vote).filter(
             Node.mindmap_id == mindmap_id
-        ).group_by(Node.id, Node.content).all()
+        ).group_by(Node.id, Node.title).all()
 
         result = []
-        for node_id, node_content, vote_count in vote_summary:
+        for node_id, node_title, vote_count in vote_summary:
             result.append({
                 "node_id": node_id,
-                "node_title": node_content,
+                "node_title": node_title,
                 "vote_count": vote_count or 0
             })
 
@@ -271,7 +271,7 @@ async def get_popular_nodes(
 
             node_data = {
                 "id": node.id,
-                "title": node.content,
+                "title": node.title,
                 "content": node.content,
                 "x_position": node.x_position,
                 "y_position": node.y_position,

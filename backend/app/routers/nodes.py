@@ -51,9 +51,9 @@ async def create_node(
                     detail="Parent node not found"
                 )
 
-        # Create a new node
         new_node = Node(
-            content=node_data.title,
+            title=node_data.title,
+            content=node_data.content,
             mindmap_id=mindmap_id,
             parent_id=node_data.parent_id if node_data.parent_id else None,
             x_position=node_data.x_position, # questionable, backend has to calculate the x and y positions
@@ -68,7 +68,7 @@ async def create_node(
         # Convert to response format
         response_data = {
             "id": new_node.id,
-            "title": new_node.content,
+            "title": new_node.title,
             "content": new_node.content,
             "x_position": new_node.x_position,
             "y_position": new_node.y_position,
@@ -123,7 +123,7 @@ async def get_mindmap_nodes(
 
             node_data = {
                 "id": node.id,
-                "title": node.content,
+                "title": node.title,
                 "content": node.content,
                 "x_position": node.x_position,
                 "y_position": node.y_position,
@@ -174,7 +174,7 @@ async def get_node(
         # Convert to response format
         response_data = {
             "id": node.id,
-            "title": node.content,
+            "title": node.title,
             "content": node.content,
             "x_position": node.x_position,
             "y_position": node.y_position,
@@ -241,8 +241,8 @@ async def update_node(
 
         # Update fields
         if node_data.title:
-            node.content = node_data.title
-        if node_data.content:
+            node.title = node_data.title
+        if node_data.content is not None:
             node.content = node_data.content
         if node_data.x_position is not None:
             node.x_position = node_data.x_position
@@ -260,7 +260,7 @@ async def update_node(
         # Convert to response format
         response_data = {
             "id": node.id,
-            "title": node.content,
+            "title": node.title,
             "content": node.content,
             "x_position": node.x_position,
             "y_position": node.y_position,

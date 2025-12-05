@@ -36,9 +36,10 @@ async def create_mindmap(
 
         # Create a root node automatically
         root_node = Node(
+            title=mindmap_data.title,
             content=mindmap_data.title,
             mindmap_id=new_mindmap.id,
-            x_position=0.0, 
+            x_position=0.0,
             y_position=0.0,
             created_by=current_user_id
         )
@@ -137,7 +138,8 @@ async def get_mindmap_data(
 
             node_data = {
                 "id": node.id,
-                "title": node.content,  # Model uses 'content', schema expects 'title'
+                "title": node.title,
+                "content": node.content,
                 "x_position": node.x_position,
                 "y_position": node.y_position,
                 "parent_id": node.parent_id,
