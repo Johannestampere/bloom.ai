@@ -9,6 +9,11 @@
 from typing import Dict, Tuple, Any, List
 from sqlalchemy.orm import Session
 from ..models import Node
+import math
+
+ANGLES = [0, 180, 90, 270, 45, 135, 225, 315]
+BASE_RADIUS = 300 # distance for depth = 1 nodes
+RADIUS_INCREMENT = 150 # each deeper level adds 150 in radius
 
 def load_tree(db: Session, mindmap_id: int) -> Any:
     """
@@ -93,8 +98,51 @@ def compute_layout(tree: Any) -> Dict[int, Tuple[float, float]]:
     For correctness, layout must be recalculated for the entire mindmap every time,
     because adding one node can shift siblings, subtrees, or even global spacing.
     """
-    positions: Dict[int, Tuple[float, float]] = {} # node_id -> (x_position, y_position)
+    if not tree or tree["root"] is None:
+        return {}
+    
+    root = tree["root"]
+    children = tree["children"]
+    depth_map = tree["depth"]
+
+    positions: Dict[int, Tuple[float, float]] = {}
+    positions[root.id] = (0.0, 0.0)
+
+    queue = [root]
+
+    while queue:
+        parent = queue.pop(0)
+        parent_x, parent_y = positions[parent.id]
+        child_list = children[parent.id]
+
+        if not child_list:
+            continue
+            
+        parent_depth = depth_map[parent.id]
+
+        radius = BASE_RADIUS + parent_depth * RADIUS_INCREMENT
+
+        total_children = len(child_list)
+        children_per_shell = len(ANGLES)
+
+        for index, child in enumerate(child_list):
+            shell = index // children_per_shell
+            angle_index = index % children_per_shell
+
+            angle_deg = ANGLES[angle_index]
+            angle_rad = math.radians(angle_deg)
+
+            child_radius = radius + shell * 120
+
+            child_x = parent_x + child_radius * math.cos(angle_rad)
+            child_y = parent_y + child_radius * math.sin(angle_rad)
+
+            positions[child.id] = (child_x, child_y)
+
+            queue.append(child)
+
     return positions
+
 
 def apply_layout(db: Session, positions: Dict[int, Tuple[float, float]]) -> None:
     """
