@@ -10,6 +10,7 @@ from ..schemas.mindmap import (
     SuccessResponse, AIIdeaResponse
 )
 from ..middleware.auth import get_current_user_id
+from ..utils import layout
 
 router = APIRouter(prefix="/api", tags=["nodes"])
 
@@ -76,6 +77,12 @@ async def create_node(
         db.commit()
         db.refresh(new_node)
 
+        tree = layout.load_tree(db, mindmap_id)
+        positions = layout.compute_layout(tree)
+        layout.apply_layout(db, positions)
+        db.commit()
+        db.refresh(new_node)
+
         response_data = {
             "id": new_node.id,
             "mindmap_id": new_node.mindmap_id,
@@ -119,10 +126,10 @@ async def get_mindmap_nodes(
                 detail="Mindmap not found"
             )
 
-        # Get all nodes for this mindmap, ordered by order_index for stable layout
+        # Get all nodes for this mindmap
         nodes = db.query(Node).filter(
             Node.mindmap_id == mindmap_id
-        ).order_by(Node.order_index).all()
+        ).order_by(Node.id).all()
 
         # Convert to response format
         result = []
