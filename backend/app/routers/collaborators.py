@@ -9,7 +9,7 @@ from datetime import datetime
 
 # Use relative imports instead of absolute imports
 from ..core.database import get_db
-from ..middleware.auth import get_current_user_id
+from ..middleware.auth import get_current_user
 from ..models.user import User
 from ..models.mindmap import MindMap
 from ..models.collaborator import Collaborator
@@ -75,7 +75,7 @@ async def invite_collaborator(
         mindmap_id: int,
         invitation: CollaboratorInvite,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user_id)
+        current_user: User = Depends(get_current_user)
 ):
     """
     Invite a user to collaborate on a mindmap
@@ -165,24 +165,26 @@ async def invite_collaborator(
 @router.get("/invitations", response_model=List[InvitationResponse])
 async def get_my_invitations(
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user_id)
+        current_user: User = Depends(get_current_user)
 ):
     """
     Get all pending invitations for the current user
     """
-    invitations = db.query(
-        Collaborator,
-        MindMap.title.label("mindmap_title"),
-        User.email.label("inviter_email"),
-        User.name.label("inviter_name")
-    ).join(
-        MindMap, Collaborator.mindmap_id == MindMap.id
-    ).join(
-        User, Collaborator.invited_by == User.id
-    ).filter(
-        Collaborator.user_id == current_user.id,
-        Collaborator.status == "pending"
-    ).all()
+    invitations = (
+        db.query(
+            Collaborator,
+            MindMap.name.label("mindmap_title"),
+            User.email.label("inviter_email"),
+            User.username.label("inviter_name"),
+        )
+        .join(MindMap, Collaborator.mindmap_id == MindMap.id)
+        .join(User, Collaborator.invited_by == User.id)
+        .filter(
+            Collaborator.user_id == current_user.id,
+            Collaborator.status == "pending",
+        )
+        .all()
+    )
 
     result = []
     for collab, mindmap_title, inviter_email, inviter_name in invitations:
@@ -205,7 +207,7 @@ async def get_my_invitations(
 async def accept_invitation(
         invitation_id: int,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user_id)
+        current_user: User = Depends(get_current_user)
 ):
     """
     Accept a collaboration invitation
@@ -235,7 +237,7 @@ async def accept_invitation(
 async def decline_invitation(
         invitation_id: int,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user_id)
+        current_user: User = Depends(get_current_user)
 ):
     """
     Decline a collaboration invitation
@@ -263,7 +265,7 @@ async def decline_invitation(
 async def get_collaborators(
         mindmap_id: int,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user_id)
+        current_user: User = Depends(get_current_user)
 ):
     """
     Get all collaborators for a mindmap
@@ -272,17 +274,20 @@ async def get_collaborators(
     # Check if user has access
     check_mindmap_access(mindmap_id, current_user.id, db)
 
-    # Get all accepted collaborators
-    collaborators = db.query(
-        Collaborator,
-        User.email.label("user_email"),
-        User.name.label("user_name")
-    ).join(
-        User, Collaborator.user_id == User.id
-    ).filter(
-        Collaborator.mindmap_id == mindmap_id,
-        Collaborator.status == "accepted"
-    ).all()
+    
+    collaborators = (
+        db.query(
+            Collaborator,
+            User.email.label("user_email"),
+            User.username.label("user_name"),
+        )
+        .join(User, Collaborator.user_id == User.id)
+        .filter(
+            Collaborator.mindmap_id == mindmap_id,
+            Collaborator.status == "accepted",
+        )
+        .all()
+    )
 
     result = []
     for collab, user_email, user_name in collaborators:
@@ -312,7 +317,7 @@ async def update_collaborator_role(
         user_id: UUID,
         update: CollaboratorUpdate,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user_id)
+        current_user: User = Depends(get_current_user)
 ):
     """
     Update a collaborator's role
@@ -357,7 +362,7 @@ async def remove_collaborator(
         mindmap_id: int,
         user_id: UUID,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user_id)
+        current_user: User = Depends(get_current_user)
 ):
     """
     Remove a collaborator from a mindmap

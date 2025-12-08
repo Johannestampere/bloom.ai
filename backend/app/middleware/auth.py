@@ -69,9 +69,22 @@ class AuthMiddleware:
 auth = AuthMiddleware()
 
 
-# Dependency to use in routes
 async def get_current_user_id(
         token: str = Depends(security),
         db: Session = Depends(get_db)
 ) -> str:
     return await auth.get_current_user(token, db)
+
+# Dependency to use in routes to return the current user object
+async def get_current_user(
+        token: str = Depends(security),
+        db: Session = Depends(get_db)
+) -> User:
+    user_id = await auth.get_current_user(token, db)
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    return user
