@@ -158,5 +158,17 @@ def apply_layout(db: Session, positions: Dict[int, Tuple[float, float]]) -> None
           * Supabase Realtime can broadcast updates to all clients
           * The frontend always renders the same canonical layout
     """
-    print("Applying layout...")
+    if not positions:
+        return
+
+    for node_id, (x, y) in positions.items():
+        db.query(Node).filter(Node.id == node_id).update(
+            {
+                Node.x_position: x,
+                Node.y_position: y,
+            },
+            synchronize_session=False,
+        )
+    
+    # we commit the changes after calling this function, externally
 
