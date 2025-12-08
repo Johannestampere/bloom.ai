@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 from typing import List
 from ..core.database import get_db
@@ -80,9 +81,19 @@ async def get_all_mindmaps(
     Get all mindmaps for the authenticated user
     """
     try:
-        mindmaps = db.query(MindMap).filter(
-            MindMap.owner_id == current_user_id
-        ).offset(skip).limit(limit).all()
+        mindmaps = (
+            db.query(MindMap)
+            .outerjoin(
+                Collaborator,
+                (Collaborator.mindmap_id == MindMap.id)
+                & (Collaborator.user_id == current_user_id)
+                & (Collaborator.status == "accepted"),
+            )
+            .filter(or_(MindMap.owner_id == current_user_id, Collaborator.id.isnot(None)))
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
         # Add node count to each mindmap
         result = []
