@@ -121,14 +121,14 @@ class NodeResponse(BaseModel):
         from_attributes = True
 
 
-class VoteResponse(VoteBase):
-    id: int
-    user_id: UUID  # Changed to UUID to match your User model
+class VoteResponse(BaseModel):
+    user_id: UUID
     node_id: int
     created_at: datetime
 
     class Config:
         from_attributes = True
+
 
 
 class MindMapResponse(MindMapBase):
