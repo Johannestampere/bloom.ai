@@ -55,15 +55,11 @@ async def vote_on_node(
         db.commit()
         db.refresh(new_vote)
 
-        # Convert to response format
-        response_data = {
-            "id": hash(f"{current_user_id}_{node_id}"),  # Random id generation for response
-            "user_id": new_vote.user_id,
-            "node_id": new_vote.node_id,
-            "created_at": new_vote.created_at
-        }
-
-        return VoteResponse(**response_data)
+        return VoteResponse(
+            user_id=new_vote.user_id,
+            node_id=new_vote.node_id,
+            created_at=new_vote.created_at
+        )
 
     except HTTPException:
         raise
@@ -156,7 +152,6 @@ async def get_node_votes(
         result = []
         for vote in votes:
             vote_data = {
-                "id": hash(f"{vote.user_id}_{vote.node_id}"),  # Generate pseudo-id
                 "user_id": vote.user_id,
                 "node_id": vote.node_id,
                 "created_at": vote.created_at

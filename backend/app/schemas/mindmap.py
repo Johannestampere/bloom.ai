@@ -130,7 +130,6 @@ class VoteResponse(BaseModel):
         from_attributes = True
 
 
-
 class MindMapResponse(MindMapBase):
     id: int
     owner_id: UUID
