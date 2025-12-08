@@ -152,22 +152,6 @@ class MindMapListResponse(BaseModel):
         from_attributes = True
 
 
-# COLLABORATION SCHEMAS
-
-class CollaboratorInvite(BaseModel):
-    email: str
-    role: str = "collaborator"  # collaborator, viewer
-
-
-class CollaboratorResponse(BaseModel):
-    user_id: UUID
-    email: str
-    role: str
-    joined_at: datetime
-
-    class Config:
-        from_attributes = True
-
 
 # AI GENERATION SCHEMAS
 
