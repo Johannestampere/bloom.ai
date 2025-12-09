@@ -89,7 +89,7 @@ class MindMapUpdate(BaseModel):
 
 # RESPONSE SCHEMAS
 
-# this is what the backend send to the frontend on node creation
+# This is what the backend send to the frontend on node creation
 #   includes the backend-calculated order_index, X and Y positions
 class NodeCreateResponse(BaseModel):
     id: int
@@ -102,7 +102,7 @@ class NodeCreateResponse(BaseModel):
     class Config:
         from_attributes = True
 
-# this is what the backend send to the frontend on node retrieval
+# This is what the backend send to the frontend on node retrieval
 #   includes more information like vote_count, user_votes
 class NodeResponse(BaseModel):
     id: int
@@ -156,15 +156,16 @@ class MindMapListResponse(BaseModel):
 
 # AI GENERATION SCHEMAS
 
-class AIIdeaRequest(BaseModel):
-    node_id: int
-    context: Optional[str] = None
+# Represents a single AI-generated candidate idea that can be optionally accepted
+# and converted into a real node by the user
+class AISuggestion(BaseModel):
+    title: str
+    content: Optional[str] = None
 
-
-class AIIdeaResponse(BaseModel):
-    ideas: List[str]
-    summary: str
-    related_themes: List[str]
+# Response returned by the AI suggestion endpoint, containing a list of
+# AI-generated node candidates for user review and selection
+class AISuggestionResponse(BaseModel):
+    suggestions: List[AISuggestion]
 
 
 # ERROR SCHEMAS

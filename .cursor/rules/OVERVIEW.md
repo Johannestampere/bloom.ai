@@ -60,3 +60,22 @@ Tables used:
 - `votes`
 
 Supabase also broadcasts row-level updates in real time.
+
+
+---
+
+## Flow for AI-generation (MVP)
+
+User taps on a node to select it
+   ↓
+AI generates suggestions
+   ↓
+Frontend shows a chooser panel
+   ↓
+User picks 1 to N ideas
+   ↓
+Backend creates chosen nodes
+   ↓
+Layout recomputes
+   ↓
+Graph updates
