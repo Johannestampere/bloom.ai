@@ -157,6 +157,7 @@ async def get_mindmap_data(
                 "parent_id": node.parent_id,
                 "mindmap_id": node.mindmap_id,
                 "order_index": node.order_index,
+                "is_ai_generated": node.is_ai_generated,
                 "vote_count": len(votes),
                 "user_votes": [vote.user_id for vote in votes],
                 "created_at": node.created_at

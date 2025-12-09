@@ -113,6 +113,7 @@ class NodeResponse(BaseModel):
     x_position: float
     y_position: float
     order_index: int
+    is_ai_generated: bool
     vote_count: int
     user_votes: List[UUID] = Field(default_factory=list)
     created_at: datetime

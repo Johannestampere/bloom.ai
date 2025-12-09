@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, func, Float
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, func, Float, Boolean
 from sqlalchemy.orm import relationship
 from ..core.database import Base
 from sqlalchemy.dialects.postgresql import UUID
@@ -14,6 +14,7 @@ class Node(Base):
     content = Column(String, nullable=True)
     x_position = Column(Float, nullable=False, server_default="0")
     y_position = Column(Float, nullable=False, server_default="0")
+    is_ai_generated = Column(Boolean, nullable=False, server_default="false")
     created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     like_count = Column(Integer, nullable=False, server_default="0")
