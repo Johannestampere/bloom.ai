@@ -7,10 +7,12 @@ from ..core.database import get_db
 from ..models import MindMap, Node, Vote
 from ..schemas.mindmap import (
     NodeCreate, NodeUpdate, NodeCreateResponse, NodeResponse,
-    SuccessResponse, AIIdeaResponse
+    SuccessResponse, AISuggestionResponse, AISuggestion
 )
 from ..middleware.auth import get_current_user_id
 from ..utils import layout
+from ..services.ai_context import build_branch_context
+from ..services.ai import generate_node_suggestions
 
 router = APIRouter(prefix="/api", tags=["nodes"])
 
@@ -351,47 +353,37 @@ async def delete_node(
 
 # AI INTEGRATION ENDPOINTS
 
-@router.post("/nodes/{node_id}/generate-ideas", response_model=AIIdeaResponse)
-async def generate_ai_ideas(
-        node_id: int,
-        current_user_id: str = Depends(get_current_user_id),
-        db: Session = Depends(get_db)
+@router.post(
+    "/nodes/{node_id}/ai-suggest",
+    response_model=AISuggestionResponse
+)
+async def suggest_ai_nodes(
+    node_id: int,
+    current_user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
 ):
     """
-    Generate AI ideas for a specific node
+    Generate AI node suggestions for a selected node.
+    Suggestions are NOT persisted until the user accepts them.
     """
-    try:
-        # Get node and verify ownership
-        node = db.query(Node).join(MindMap).filter(
-            Node.id == node_id,
-            MindMap.owner_id == current_user_id
-        ).first()
+    node = db.query(Node).join(MindMap).filter(
+        Node.id == node_id,
+        MindMap.owner_id == current_user_id
+    ).first()
 
-        if not node:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Node not found"
-            )
+    if not node:
+        raise HTTPException(status_code=404, detail="Node not found")
 
-        # TODO: Implement actual AI integration with OpenAI
-        # For now, return mock data
-        mock_response = AIIdeaResponse(
-            ideas=[
-                f"Expand on {node.content} with practical applications",
-                f"Consider the challenges of implementing {node.content}",
-                f"Explore related technologies for {node.content}",
-                f"Analyze market opportunities for {node.content}"
-            ],
-            summary=f"Generated ideas based on the concept: {node.content}",
-            related_themes=["innovation", "implementation", "market-analysis", "technology"]
-        )
+    context_nodes = build_branch_context(db, node_id)
 
-        return mock_response
+    if not context_nodes:
+        raise HTTPException(status_code=400, detail="Invalid node context")
 
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate AI ideas: {str(e)}"
-        )
+    raw_suggestions = generate_node_suggestions(
+        context_nodes,
+        suggestions_count=3
+    )
+
+    return AISuggestionResponse(
+        suggestions=[AISuggestion(**s) for s in raw_suggestions]
+    )
