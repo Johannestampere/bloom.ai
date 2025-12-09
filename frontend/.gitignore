@@ -33,29 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
-
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-#vscode
-.vscode
-
-.cursor
-
-frontend/.cursor
-frontend/node_modules
-frontend/.next
-frontend/out
-frontend/build
-frontend/.env
-frontend/.env.local
-frontend/.env.development.local
-frontend/.env.test.local
-frontend/.env.production.local
-frontend/.env.development
-frontend/.env.test
-frontend/.env.production
