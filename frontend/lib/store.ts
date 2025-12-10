@@ -1,12 +1,18 @@
 import { create } from "zustand";
 import type { CurrentUser, MindMapListItem, NodeResponse } from "./types";
-import { api, type VoteResponse } from "./api";
+import {
+  api,
+  type VoteResponse,
+  type InvitationResponse,
+  type CollaboratorListResponse,
+} from "./api";
 
 type MindmapState = {
   // States
   currentUser: CurrentUser | null;
   mindmaps: MindMapListItem[];
   nodesByMindmapId: Record<number, NodeResponse[]>;
+  invitations: InvitationResponse[];
   loading: boolean;
   error: string | null;
 
@@ -20,6 +26,10 @@ type MindmapState = {
   updateNode: (id: number, payload: Partial<Pick<NodeResponse, "title" | "content" | "x_position" | "y_position" | "parent_id" | "order_index">>) => Promise<void>;
   deleteNode: (id: number, mindmapId: number) => Promise<void>;
   toggleVote: (node: NodeResponse) => Promise<void>;
+  fetchInvitations: () => Promise<void>;
+  inviteCollaborator: (mindmapId: number, email: string, role: string) => Promise<void>;
+  acceptInvitation: (invitationId: number) => Promise<void>;
+  declineInvitation: (invitationId: number) => Promise<void>;
 };
 
 // Creating the Zustand store for the global mindmap state
@@ -27,6 +37,7 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
   currentUser: null,
   mindmaps: [],
   nodesByMindmapId: {},
+  invitations: [],
   loading: false,
   error: null,
 
@@ -88,8 +99,7 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
     const { mindmapId } = input;
     set({ error: null });
     try {
-      const created = await api.createNode(input);
-      // After creation, re-fetch nodes to get the full NodeResponse set with layout applied
+      await api.createNode(input);
       await get().fetchMindmapNodes(mindmapId);
     } catch (err: any) {
       set({ error: err.message ?? "Failed to create node" });
@@ -186,6 +196,50 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
       }
     } catch (err: any) {
       set({ error: err.message ?? "Failed to toggle vote" });
+    }
+  },
+
+  async fetchInvitations() {
+    set({ loading: true, error: null });
+    try {
+      const invitations = await api.getMyInvitations();
+      set({ invitations, loading: false });
+    } catch (err: any) {
+      set({ error: err.message ?? "Failed to load invitations", loading: false });
+    }
+  },
+
+  async inviteCollaborator(mindmapId: number, email: string, role: string) {
+    set({ error: null });
+    try {
+      await api.inviteCollaborator(mindmapId, { email, role });
+    } catch (err: any) {
+      set({ error: err.message ?? "Failed to invite collaborator" });
+    }
+  },
+
+  async acceptInvitation(invitationId: number) {
+    set({ error: null });
+    try {
+      await api.acceptInvitation(invitationId);
+      set((state) => ({
+        invitations: state.invitations.filter((inv) => inv.id !== invitationId),
+      }));
+      await get().fetchMindmaps();
+    } catch (err: any) {
+      set({ error: err.message ?? "Failed to accept invitation" });
+    }
+  },
+
+  async declineInvitation(invitationId: number) {
+    set({ error: null });
+    try {
+      await api.declineInvitation(invitationId);
+      set((state) => ({
+        invitations: state.invitations.filter((inv) => inv.id !== invitationId),
+      }));
+    } catch (err: any) {
+      set({ error: err.message ?? "Failed to decline invitation" });
     }
   },
 }));

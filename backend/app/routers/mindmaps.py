@@ -164,12 +164,18 @@ async def get_mindmap_data(
             }
             nodes_response.append(node_data)
 
+        # Compute collaborators count for this mindmap
+        total_collaborators = db.query(Collaborator).filter(
+            Collaborator.mindmap_id == mindmap.id
+        ).count()
+
         # Convert mindmap to response format
         response_data = {
             "id": mindmap.id,
             "title": mindmap.name,
             "nodes": nodes_response,
             "owner_id": mindmap.owner_id,
+            "total_collaborators": total_collaborators,
             "created_at": mindmap.created_at
         }
 
@@ -214,13 +220,18 @@ async def update_mindmap(
         db.commit()
         db.refresh(mindmap)
 
+        # Compute collaborators count for this mindmap
+        total_collaborators = db.query(Collaborator).filter(
+            Collaborator.mindmap_id == mindmap.id
+        ).count()
+
         # Return response
         response_data = {
             "id": mindmap.id,
             "title": mindmap.name,
             "owner_id": mindmap.owner_id,
             "nodes": [],
-            "total_collaborators": 1,
+            "total_collaborators": total_collaborators,
             "created_at": mindmap.created_at
         }
 
