@@ -1,20 +1,27 @@
 import { create } from "zustand";
-import { CurrentUser, MindMapListItem, NodeResponse, VoteResponse, InvitationResponse, CollaboratorListResponse } from "./types";
 import {
-  api
-} from "./api";
+  CurrentUser,
+  MindMapListItem,
+  NodeResponse,
+  VoteResponse,
+  InvitationResponse,
+  CollaboratorListResponse,
+} from "./types";
+import { api } from "./api";
 
 type MindmapState = {
   // States
   currentUser: CurrentUser | null;
   mindmaps: MindMapListItem[];
   nodesByMindmapId: Record<number, NodeResponse[]>;
+  selectedNodeId: number | null;
   invitations: InvitationResponse[];
   loading: boolean;
   error: string | null;
 
   // Actions
   setCurrentUser: (user: CurrentUser | null) => void;
+  setSelectedNodeId: (id: number | null) => void;
   fetchMindmaps: () => Promise<void>;
   fetchMindmapNodes: (mindmapId: number) => Promise<void>;
   createMindmap: (title: string) => Promise<void>;
@@ -34,12 +41,17 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
   currentUser: null,
   mindmaps: [],
   nodesByMindmapId: {},
+  selectedNodeId: null,
   invitations: [],
   loading: false,
   error: null,
 
   setCurrentUser(user) {
     set({ currentUser: user });
+  },
+
+  setSelectedNodeId(id) {
+    set({ selectedNodeId: id });
   },
 
   async fetchMindmaps() {
