@@ -27,4 +27,48 @@ export type CurrentUser = {
   username: string;
 };
 
+export type VoteResponse = {
+  user_id: string;
+  node_id: number;
+  created_at: string;
+};
+
+export type MindMapDetail = {
+  id: number;
+  title: string;
+  owner_id: string;
+  nodes: NodeResponse[];
+  total_collaborators: number;
+  created_at: string;
+};
+
+export type CollaboratorResponse = {
+  id: number;
+  mindmap_id: number;
+  user_id: string;
+  role: string;
+  invited_by: string | null;
+  invited_at: string;
+  accepted_at: string | null;
+  status: string;
+  user_email?: string;
+  user_name?: string;
+};
+
+export type InvitationResponse = {
+  id: number;
+  mindmap_id: number;
+  mindmap_title: string;
+  role: string;
+  invited_by: string;
+  inviter_name: string | null;
+  inviter_email: string;
+  invited_at: string;
+  status: string;
+};
+
+export type CollaboratorListResponse = {
+  collaborators: CollaboratorResponse[];
+  total: number;
+};
 

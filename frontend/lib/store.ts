@@ -1,10 +1,7 @@
 import { create } from "zustand";
-import type { CurrentUser, MindMapListItem, NodeResponse } from "./types";
+import { CurrentUser, MindMapListItem, NodeResponse, VoteResponse, InvitationResponse, CollaboratorListResponse } from "./types";
 import {
-  api,
-  type VoteResponse,
-  type InvitationResponse,
-  type CollaboratorListResponse,
+  api
 } from "./api";
 
 type MindmapState = {
@@ -243,5 +240,3 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
     }
   },
 }));
-
-
