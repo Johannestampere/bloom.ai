@@ -1,0 +1,193 @@
+"use client";
+
+import { useEffect, useMemo, useState, useRef, KeyboardEvent } from "react";
+import { useMindmapStore } from "@/lib/store";
+import { api } from "@/lib/api";
+import type { MindMapDetail } from "@/lib/types";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+
+type MindmapHeaderProps = {
+  mindmapId: number;
+};
+
+export function MindmapHeader({ mindmapId }: MindmapHeaderProps) {
+    const { currentUser, nodesByMindmapId, fetchMindmaps } = useMindmapStore(
+        (state) => ({
+        currentUser: state.currentUser,
+        nodesByMindmapId: state.nodesByMindmapId,
+        fetchMindmaps: state.fetchMindmaps,
+        })
+    );
+
+    const [mindmap, setMindmap] = useState<MindMapDetail | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [titleInput, setTitleInput] = useState("");
+    const titleRef = useRef<HTMLInputElement | null>(null);
+
+    useEffect(() => {
+        let mounted = true;
+        setLoading(true);
+        setError(null);
+        api
+        .getMindmap(mindmapId)
+        .then((data) => {
+            if (!mounted) return;
+            setMindmap(data);
+            setTitleInput(data.title);
+            setLoading(false);
+        })
+        .catch((err: any) => {
+            if (!mounted) return;
+            setError(err.message ?? "Failed to load mindmap");
+            setLoading(false);
+        });
+        return () => {
+            mounted = false;
+        };
+    }, [mindmapId]);
+
+    useEffect(() => {
+        if (isEditing && titleRef.current) {
+            titleRef.current.focus();
+            titleRef.current.select();
+        }
+    }, [isEditing]);
+
+    const nodeCount = useMemo(() => {
+        const fromStore = nodesByMindmapId[mindmapId];
+        if (fromStore) return fromStore.length;
+        if (mindmap) return mindmap.nodes.length;
+        return 0;
+    }, [nodesByMindmapId, mindmapId, mindmap]);
+
+    const collaboratorCount = mindmap?.total_collaborators ?? 0;
+
+    const roleLabel = useMemo(() => {
+        if (!mindmap || !currentUser) return null;
+        return mindmap.owner_id === currentUser.id ? "Owner" : "Collaborator";
+    }, [mindmap, currentUser]);
+
+    const canEditTitle = useMemo(() => {
+        if (!mindmap || !currentUser) return false;
+        return mindmap.owner_id === currentUser.id;
+    }, [mindmap, currentUser]);
+
+    const startEditing = () => {
+        if (!canEditTitle) return;
+        setIsEditing(true);
+    };
+
+    const saveTitle = async () => {
+        if (!mindmap || !canEditTitle) {
+            setIsEditing(false);
+            return;
+        }
+
+        const trimmed = titleInput.trim();
+
+        if (!trimmed || trimmed === mindmap.title) {
+            setTitleInput(mindmap.title);
+            setIsEditing(false);
+            return;
+        }
+
+        setSaving(true);
+        setError(null);
+
+        try {
+            const updated = await api.updateMindmap(mindmapId, { title: trimmed });
+            setMindmap(updated);
+            setTitleInput(updated.title);
+            setIsEditing(false);
+            await fetchMindmaps();
+        } catch (err: any) {
+            setError(err.message ?? "Failed to rename mindmap");
+            setTitleInput(mindmap.title);
+            setIsEditing(false);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleTitleKeyDown = async (e: KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            await saveTitle();
+        } else if (e.key === "Escape") {
+        if (mindmap) {
+            setTitleInput(mindmap.title);
+        }
+        setIsEditing(false);
+        }
+    };
+
+    return (
+        <div className="border-b border-slate-800 bg-slate-900/70 px-6 py-3">
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4">
+            <div className="flex flex-col text-xs text-slate-400">
+            {loading && <span>Loading…</span>}
+            {!loading && (
+                <>
+                <span>
+                    {nodeCount} node{nodeCount === 1 ? "" : "s"}
+                </span>
+                <span>
+                    {collaboratorCount} collaborator
+                    {collaboratorCount === 1 ? "" : "s"}
+                </span>
+                </>
+            )}
+            </div>
+
+            <div className="flex-1">
+            {isEditing ? (
+                <Input
+                ref={titleRef}
+                value={titleInput}
+                onChange={(e) => setTitleInput(e.target.value)}
+                onBlur={saveTitle}
+                onKeyDown={handleTitleKeyDown}
+                disabled={saving}
+                className={cn(
+                    "mx-auto w-full max-w-md border-none bg-transparent text-center text-base font-semibold tracking-tight text-slate-50 focus-visible:ring-0 focus-visible:border-0"
+                )}
+                />
+            ) : (
+                <button
+                type="button"
+                onClick={startEditing}
+                className={cn(
+                    "mx-auto block max-w-md truncate text-center text-base font-semibold tracking-tight",
+                    canEditTitle
+                    ? "text-slate-50 hover:text-emerald-300"
+                    : "text-slate-200 cursor-default"
+                )}
+                >
+                {mindmap ? mindmap.title : loading ? "Loading…" : "Mindmap"}
+                </button>
+            )}
+            </div>
+
+            <div className="flex flex-col items-end text-xs text-slate-400">
+            {roleLabel && <span>{roleLabel}</span>}
+            {mindmap && (
+                <span>
+                Created {new Date(mindmap.created_at).toLocaleDateString()}
+                </span>
+            )}
+            {error && (
+                <span className="text-[10px] text-red-300 max-w-xs text-right">
+                {error}
+                </span>
+            )}
+            </div>
+        </div>
+        </div>
+    );
+}
+
+

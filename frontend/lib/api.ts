@@ -45,6 +45,13 @@ export const api = {
     return request<MindMapDetail>(`/api/mindmaps/${id}`);
   },
 
+  updateMindmap(id: number, payload: { title: string }): Promise<MindMapDetail> {
+    return request<MindMapDetail>(`/api/mindmaps/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+
   deleteMindmap(id: number): Promise<{ message: string }> {
     return request<{ message: string }>(`/api/mindmaps/${id}`, {
       method: "DELETE",
