@@ -11,7 +11,7 @@ type MindmapCanvasProps = {
   onAddChild?: (parentId: number) => void;
 };
 
-const CANVAS_SIZE = 800;
+const CANVAS_SIZE = 1000;
 const CANVAS_CENTER = CANVAS_SIZE / 2;
 
 export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {

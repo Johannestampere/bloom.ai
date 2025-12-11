@@ -23,6 +23,8 @@ export function NodeSidePanel({
   const selectedNodeId = useMindmapStore((state) => state.selectedNodeId);
   const updateNode = useMindmapStore((state) => state.updateNode);
   const toggleVote = useMindmapStore((state) => state.toggleVote);
+   const deleteNode = useMindmapStore((state) => state.deleteNode);
+   const setSelectedNodeId = useMindmapStore((state) => state.setSelectedNodeId);
   const currentUser = useMindmapStore((state) => state.currentUser);
 
   const nodes = nodesByMindmapId[mindmapId] ?? [];
@@ -93,6 +95,14 @@ export function NodeSidePanel({
       return label;
     });
   }, [selectedNode, collaborators, currentUser]);
+
+  const handleDelete = async () => {
+    if (!selectedNode) return;
+    const ok = window.confirm("Delete this node and all of its children?");
+    if (!ok) return;
+    await deleteNode(selectedNode.id, mindmapId);
+    setSelectedNodeId(null);
+  };
 
   if (!selectedNode) {
     return (
@@ -178,6 +188,17 @@ export function NodeSidePanel({
             {!loadingVoters && voterLabels.length === 0 && (
               <div className="text-[11px] text-slate-500">No votes yet.</div>
             )}
+          </div>
+
+          <div className="mt-auto border-t border-slate-800 pt-3">
+            <Button
+              type="button"
+              variant="secondary"
+              className="h-8 px-3 text-[11px] text-red-300 border-red-500/60 hover:text-red-200 hover:border-red-400"
+              onClick={handleDelete}
+            >
+              Delete node
+            </Button>
           </div>
         </div>
       </Panel>
