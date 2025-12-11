@@ -17,7 +17,7 @@ class AuthMiddleware:
         self.supabase_jwt_secret: str = settings.SUPABASE_JWT_SECRET
 
     async def get_current_user(
-        self,
+            self,
         token: HTTPAuthorizationCredentials = Depends(security),
         db: Session = Depends(get_db),
     ) -> str:

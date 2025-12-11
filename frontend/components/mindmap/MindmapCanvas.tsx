@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef, MouseEvent } from "react";
+import { useMemo, useEffect, useRef, useState, MouseEvent } from "react";
 import { useMindmapStore } from "@/lib/store";
 import { buildGraph } from "@/lib/graph";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -11,17 +11,23 @@ type MindmapCanvasProps = {
   onAddChild?: (parentId: number) => void;
 };
 
-const CANVAS_SIZE = 2200;
+const CANVAS_SIZE = 800;
 const CANVAS_CENTER = CANVAS_SIZE / 2;
 
 export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
   const nodesByMindmapId = useMindmapStore((state) => state.nodesByMindmapId);
   const selectedNodeId = useMindmapStore((state) => state.selectedNodeId);
   const setSelectedNodeId = useMindmapStore((state) => state.setSelectedNodeId);
-
   const [scale, setScale] = useState(1);
   const [hasCentered, setHasCentered] = useState(false);
+  const [isPanning, setIsPanning] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const panStateRef = useRef<{
+    startX: number;
+    startY: number;
+    scrollLeft: number;
+    scrollTop: number;
+  } | null>(null);
 
   const nodes = nodesByMindmapId[mindmapId] ?? [];
   const graph = useMemo(() => buildGraph(nodes), [nodes]);
@@ -39,16 +45,16 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
     setHasCentered(true);
   }, [hasCentered, mindmapId, graph]);
 
+  // Zoom only on pinch (trackpad / touchpad) – browsers surface this as wheel with ctrlKey/metaKey.
   const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
-    if (event.ctrlKey || event.metaKey) {
-      event.preventDefault();
-      const delta = -event.deltaY;
-      const factor = delta > 0 ? 1.05 : 0.95;
-      setScale((prev) => {
-        const next = prev * factor;
-        return Math.min(3, Math.max(0.3, next));
-      });
-    }
+    if (!event.ctrlKey && !event.metaKey) return;
+    event.preventDefault();
+    const delta = -event.deltaY;
+    const factor = delta > 0 ? 1.05 : 0.95;
+    setScale((prev) => {
+      const next = prev * factor;
+      return Math.min(3, Math.max(0.3, next));
+    });
   };
 
   const handleNodeClick = (id: number, e: MouseEvent) => {
@@ -63,11 +69,48 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
     }
   };
 
+  const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
+    const el = containerRef.current;
+    if (!el) return;
+
+    setIsPanning(true);
+    panStateRef.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      scrollLeft: el.scrollLeft,
+      scrollTop: el.scrollTop,
+    };
+  };
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!isPanning) return;
+    const el = containerRef.current;
+    const pan = panStateRef.current;
+    if (!el || !pan) return;
+
+    event.preventDefault();
+    const dx = event.clientX - pan.startX;
+    const dy = event.clientY - pan.startY;
+
+    el.scrollLeft = pan.scrollLeft - dx;
+    el.scrollTop = pan.scrollTop - dy;
+  };
+
+  const handleMouseUpOrLeave = () => {
+    setIsPanning(false);
+    panStateRef.current = null;
+  };
+
   return (
     <div
       ref={containerRef}
       className="relative h-full w-full overflow-auto bg-slate-950"
       onWheel={handleWheel}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUpOrLeave}
+      onMouseLeave={handleMouseUpOrLeave}
       onClick={() => setSelectedNodeId(null)}
     >
       <div
