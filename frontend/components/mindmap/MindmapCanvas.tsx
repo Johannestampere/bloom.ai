@@ -106,6 +106,18 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
             `\nVotes: ${node.vote_count}`,
           ].join("");
 
+          let voteGlow = "";
+          if (node.vote_count >= 3) {
+            voteGlow =
+              "shadow-[0_0_35px_rgba(16,185,129,0.8)] border-emerald-400/90";
+          } else if (node.vote_count >= 2) {
+            voteGlow =
+              "shadow-[0_0_22px_rgba(16,185,129,0.6)] border-emerald-300/80";
+          } else if (node.vote_count > 0) {
+            voteGlow =
+              "shadow-[0_0_12px_rgba(16,185,129,0.4)] border-emerald-300/60";
+          }
+
           return (
             <div
               key={node.id}
@@ -121,6 +133,7 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
                     "flex min-w-[120px] max-w-[220px] -translate-x-1/2 -translate-y-1/2 flex-col items-center rounded-full border px-4 py-2 text-xs shadow-sm transition-colors",
                     "bg-slate-900/80 text-slate-100 border-slate-700",
                     "hover:border-emerald-400/80 hover:text-emerald-100",
+                    voteGlow,
                     node.is_ai_generated && "border-dashed",
                     isSelected &&
                       "border-emerald-400 bg-emerald-500/10 text-emerald-50"
