@@ -1,4 +1,4 @@
-import { MindMapListItem, MindMapDetail, NodeResponse, VoteResponse, CollaboratorResponse, InvitationResponse, CollaboratorListResponse } from "./types";
+import { MindMapListItem, MindMapDetail, NodeResponse, VoteResponse, CollaboratorResponse, InvitationResponse, CollaboratorListResponse, AISuggestionResponse } from "./types";
 import { getAuthToken } from "./supabase";
 
 const API_BASE =
@@ -138,5 +138,11 @@ export const api = {
     return request<CollaboratorListResponse>(
       `/api/mindmaps/${mindmapId}/collaborators`
     );
+  },
+
+  getAISuggestions(nodeId: number): Promise<AISuggestionResponse> {
+    return request<AISuggestionResponse>(`/api/nodes/${nodeId}/ai-suggest`, {
+      method: "POST",
+    });
   },
 };

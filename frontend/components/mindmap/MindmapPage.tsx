@@ -6,12 +6,13 @@ import { MindmapCanvas } from "./MindmapCanvas";
 import { NodeSidePanel } from "./NodeSidePanel";
 import { MindmapHeader } from "./MindmapHeader";
 import { CollaboratorsPanel } from "./CollaboratorsPanel";
+import { AISuggestionsPanel } from "./AISuggestionsPanel";
 
 type MindmapPageProps = {
     mindmapId: number;
 };
 
-type SidePanel = "node" | "collaborators";
+type SidePanel = "node" | "collaborators" | "ai";
 
 export function MindmapPage({ mindmapId }: MindmapPageProps) {
     const {
@@ -54,6 +55,10 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
         );
     };
 
+    const openAIPanel = () => {
+        setActivePanel("ai");
+    };
+
     return (
         <div className="flex h-full w-full flex-col">
         <MindmapHeader
@@ -66,10 +71,14 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
             <MindmapCanvas mindmapId={mindmapId} onAddChild={handleAddChild} />
             </div>
             <div className="w-80 flex-shrink-0">
-            {activePanel === "node" ? (
-                <NodeSidePanel mindmapId={mindmapId} />
-            ) : (
+            {activePanel === "node" && (
+                <NodeSidePanel mindmapId={mindmapId} onOpenAISuggestions={openAIPanel} />
+            )}
+            {activePanel === "collaborators" && (
                 <CollaboratorsPanel mindmapId={mindmapId} />
+            )}
+            {activePanel === "ai" && (
+                <AISuggestionsPanel mindmapId={mindmapId} onClose={() => setActivePanel("node")} />
             )}
             </div>
         </div>

@@ -72,3 +72,12 @@ export type CollaboratorListResponse = {
   total: number;
 };
 
+export type AISuggestion = {
+  title: string;
+  content?: string | null;
+};
+
+export type AISuggestionResponse = {
+  suggestions: AISuggestion[];
+};
+

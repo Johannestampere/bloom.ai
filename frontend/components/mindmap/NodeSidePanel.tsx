@@ -10,11 +10,12 @@ import type { CollaboratorResponse } from "@/lib/types";
 
 type NodeSidePanelProps = {
   mindmapId: number;
+  onOpenAISuggestions: () => void;
 };
 
 // This is the side panel that shows up when the user selects a node. 
 // It allows the user to edit title and content, choose to add a child or delete the node, vote and see the voters.
-export function NodeSidePanel({ mindmapId }: NodeSidePanelProps) {
+export function NodeSidePanel({ mindmapId, onOpenAISuggestions }: NodeSidePanelProps) {
   const { nodesByMindmapId, selectedNodeId, updateNode, toggleVote, currentUser } =
     useMindmapStore((state) => ({
       nodesByMindmapId: state.nodesByMindmapId,
@@ -129,6 +130,18 @@ export function NodeSidePanel({ mindmapId }: NodeSidePanelProps) {
               onBlur={handleSave}
               placeholder="Node details"
             />
+          </div>
+
+          <div className="mt-1 flex justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              className="h-7 px-3 text-[11px]"
+              onClick={onOpenAISuggestions}
+              disabled={!selectedNode}
+            >
+              AI suggestions
+            </Button>
           </div>
 
           <div className="mt-2 space-y-1 border-t border-slate-800 pt-3">
