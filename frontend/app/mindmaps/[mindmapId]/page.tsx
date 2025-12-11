@@ -1,11 +1,18 @@
+import { notFound } from "next/navigation";
 import { MindmapPage } from "@/components/mindmap/MindmapPage";
 
 type PageProps = {
-  params: { mindmapId: string };
+  params: Promise<{ mindmapId: string }>;
 };
 
-export default function Page({ params }: PageProps) {
-  const id = Number(params.mindmapId);
+export default async function Page({ params }: PageProps) {
+  const { mindmapId } = await params;
+  const id = Number(mindmapId);
+
+  if (Number.isNaN(id)) {
+    notFound();
+  }
+
   return <MindmapPage mindmapId={id} />;
 }
 

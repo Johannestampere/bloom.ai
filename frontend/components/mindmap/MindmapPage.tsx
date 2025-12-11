@@ -16,14 +16,10 @@ type MindmapPageProps = {
 type SidePanel = "node" | "collaborators" | "ai";
 
 export function MindmapPage({ mindmapId }: MindmapPageProps) {
-    const { createNode, setSelectedNodeId, loading, error } = useMindmapStore(
-        (state) => ({
-        createNode: state.createNode,
-        setSelectedNodeId: state.setSelectedNodeId,
-        loading: state.loading,
-        error: state.error,
-        })
-    );
+    const createNode = useMindmapStore((state) => state.createNode);
+    const setSelectedNodeId = useMindmapStore((state) => state.setSelectedNodeId);
+    const loading = useMindmapStore((state) => state.loading);
+    const error = useMindmapStore((state) => state.error);
 
     const [activePanel, setActivePanel] = useState<SidePanel>("node");
 
