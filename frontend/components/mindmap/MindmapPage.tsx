@@ -16,24 +16,29 @@ type MindmapPageProps = {
 type SidePanel = "node" | "collaborators" | "ai";
 
 export function MindmapPage({ mindmapId }: MindmapPageProps) {
-    const {
-        fetchMindmapNodes,
-        createNode,
-        setSelectedNodeId,
-        loading,
-        error,
-    } = useMindmapStore((state) => ({
-        fetchMindmapNodes: state.fetchMindmapNodes,
+    const { createNode, setSelectedNodeId, loading, error } = useMindmapStore(
+        (state) => ({
         createNode: state.createNode,
         setSelectedNodeId: state.setSelectedNodeId,
         loading: state.loading,
         error: state.error,
-    }));
+        })
+    );
 
     const [activePanel, setActivePanel] = useState<SidePanel>("node");
 
     useEffect(() => {
-        fetchMindmapNodes(mindmapId).catch(() => {});
+        const fetchNodes = async () => {
+        try {
+            await useMindmapStore
+            .getState()
+            .fetchMindmapNodes(mindmapId);
+        } catch {
+            // ignore errors here; store already tracks error state
+        }
+        };
+
+        fetchNodes().catch(() => {});
 
         const nodesChannel = supabase
         .channel(`mindmap-${mindmapId}-nodes`)
@@ -46,7 +51,7 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
             filter: `mindmap_id=eq.${mindmapId}`,
             },
             () => {
-            fetchMindmapNodes(mindmapId).catch(() => {});
+            fetchNodes().catch(() => {});
             }
         )
         .subscribe();
@@ -61,7 +66,7 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
             table: "votes",
             },
             () => {
-            fetchMindmapNodes(mindmapId).catch(() => {});
+            fetchNodes().catch(() => {});
             }
         )
         .subscribe();
@@ -70,7 +75,7 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
         supabase.removeChannel(nodesChannel);
         supabase.removeChannel(votesChannel);
         };
-    }, [fetchMindmapNodes, mindmapId]);
+    }, [mindmapId]);
 
     const handleAddChild = async (parentId: number) => {
         try {

@@ -1,10 +1,8 @@
-# services/ai.py
 from typing import List, Dict
-import os
+from ..core.config import settings
 from openai import OpenAI
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
+client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
 def _build_prompt(context_nodes: List[Dict[str, str]], suggestions_count: int) -> str:
     """

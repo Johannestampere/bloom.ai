@@ -15,19 +15,15 @@ type AISuggestionsPanelProps = {
 type SelectableSuggestion = AISuggestion & { id: number; selected: boolean };
 
 export function AISuggestionsPanel({
-    mindmapId,
-    onClose,
-    }: AISuggestionsPanelProps) {
-    const { nodesByMindmapId, selectedNodeId, createNode } = useMindmapStore(
-        (state) => ({
-            nodesByMindmapId: state.nodesByMindmapId,
-            selectedNodeId: state.selectedNodeId,
-            createNode: state.createNode,
-        })
-    );
+  mindmapId,
+  onClose,
+}: AISuggestionsPanelProps) {
+  const nodesByMindmapId = useMindmapStore((state) => state.nodesByMindmapId);
+  const selectedNodeId = useMindmapStore((state) => state.selectedNodeId);
+  const createNode = useMindmapStore((state) => state.createNode);
 
-    const nodes = nodesByMindmapId[mindmapId] ?? [];
-    const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null;
+  const nodes = nodesByMindmapId[mindmapId] ?? [];
+  const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null;
 
     const [suggestions, setSuggestions] = useState<SelectableSuggestion[]>([]);
     const [loading, setLoading] = useState(true);

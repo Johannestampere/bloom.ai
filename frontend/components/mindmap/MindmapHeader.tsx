@@ -19,13 +19,9 @@ export function MindmapHeader({
     isCollaboratorsOpen,
     onToggleCollaborators,
 }: MindmapHeaderProps) {
-    const { currentUser, nodesByMindmapId, fetchMindmaps } = useMindmapStore(
-        (state) => ({
-        currentUser: state.currentUser,
-        nodesByMindmapId: state.nodesByMindmapId,
-        fetchMindmaps: state.fetchMindmaps,
-        })
-    );
+    const currentUser = useMindmapStore((state) => state.currentUser);
+    const nodesByMindmapId = useMindmapStore((state) => state.nodesByMindmapId);
+    const fetchMindmaps = useMindmapStore((state) => state.fetchMindmaps);
 
     const [mindmap, setMindmap] = useState<MindMapDetail | null>(null);
     const [loading, setLoading] = useState(true);

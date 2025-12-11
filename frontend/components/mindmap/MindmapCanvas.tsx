@@ -15,12 +15,9 @@ const CANVAS_SIZE = 4000;
 const CANVAS_CENTER = CANVAS_SIZE / 2;
 
 export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
-  const { nodesByMindmapId, selectedNodeId, setSelectedNodeId } =
-    useMindmapStore((state) => ({
-      nodesByMindmapId: state.nodesByMindmapId,
-      selectedNodeId: state.selectedNodeId,
-      setSelectedNodeId: state.setSelectedNodeId,
-    }));
+  const nodesByMindmapId = useMindmapStore((state) => state.nodesByMindmapId);
+  const selectedNodeId = useMindmapStore((state) => state.selectedNodeId);
+  const setSelectedNodeId = useMindmapStore((state) => state.setSelectedNodeId);
 
   const [scale, setScale] = useState(1);
 

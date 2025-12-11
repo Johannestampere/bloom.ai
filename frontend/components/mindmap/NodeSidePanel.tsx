@@ -15,15 +15,15 @@ type NodeSidePanelProps = {
 
 // This is the side panel that shows up when the user selects a node. 
 // It allows the user to edit title and content, choose to add a child or delete the node, vote and see the voters.
-export function NodeSidePanel({ mindmapId, onOpenAISuggestions }: NodeSidePanelProps) {
-  const { nodesByMindmapId, selectedNodeId, updateNode, toggleVote, currentUser } =
-    useMindmapStore((state) => ({
-      nodesByMindmapId: state.nodesByMindmapId,
-      selectedNodeId: state.selectedNodeId,
-      updateNode: state.updateNode,
-      toggleVote: state.toggleVote,
-      currentUser: state.currentUser,
-    }));
+export function NodeSidePanel({
+  mindmapId,
+  onOpenAISuggestions,
+}: NodeSidePanelProps) {
+  const nodesByMindmapId = useMindmapStore((state) => state.nodesByMindmapId);
+  const selectedNodeId = useMindmapStore((state) => state.selectedNodeId);
+  const updateNode = useMindmapStore((state) => state.updateNode);
+  const toggleVote = useMindmapStore((state) => state.toggleVote);
+  const currentUser = useMindmapStore((state) => state.currentUser);
 
   const nodes = nodesByMindmapId[mindmapId] ?? [];
   const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null;

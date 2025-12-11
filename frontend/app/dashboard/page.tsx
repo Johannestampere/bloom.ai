@@ -10,14 +10,12 @@ export default function DashboardPage() {
   const router = useRouter();
   const {
     mindmaps,
-    fetchMindmaps,
     createMindmap,
     deleteMindmap,
     loading,
     error,
   } = useMindmapStore((state) => ({
     mindmaps: state.mindmaps,
-    fetchMindmaps: state.fetchMindmaps,
     createMindmap: state.createMindmap,
     deleteMindmap: state.deleteMindmap,
     loading: state.loading,
@@ -27,8 +25,15 @@ export default function DashboardPage() {
   const [title, setTitle] = useState("");
 
   useEffect(() => {
-    fetchMindmaps().catch(() => {});
-  }, [fetchMindmaps]);
+    const load = async () => {
+      try {
+        await useMindmapStore.getState().fetchMindmaps();
+      } catch {
+        // error is already stored in Zustand
+      }
+    };
+    load().catch(() => {});
+  }, []);
 
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();

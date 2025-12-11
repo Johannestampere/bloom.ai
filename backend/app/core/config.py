@@ -11,5 +11,6 @@ class Settings(BaseSettings):
     SUPABASE_SERVICE_ROLE_KEY: str
     SUPABASE_ANON_KEY: str
     SUPABASE_JWT_SECRET: str
+    OPENAI_API_KEY: str
 
 settings = Settings()

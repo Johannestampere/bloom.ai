@@ -13,9 +13,9 @@ type CollaboratorsPanelProps = {
 };
 
 export function CollaboratorsPanel({ mindmapId }: CollaboratorsPanelProps) {
-    const { inviteCollaborator } = useMindmapStore((state) => ({
-        inviteCollaborator: state.inviteCollaborator,
-    }));
+    const inviteCollaborator = useMindmapStore(
+        (state) => state.inviteCollaborator
+    );
 
     const [collaborators, setCollaborators] = useState<CollaboratorResponse[]>([]);
     const [loading, setLoading] = useState(true);
