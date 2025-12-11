@@ -7,6 +7,7 @@ import { NodeSidePanel } from "./NodeSidePanel";
 import { MindmapHeader } from "./MindmapHeader";
 import { CollaboratorsPanel } from "./CollaboratorsPanel";
 import { AISuggestionsPanel } from "./AISuggestionsPanel";
+import { supabase } from "@/lib/supabase";
 
 type MindmapPageProps = {
     mindmapId: number;
@@ -33,6 +34,42 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
 
     useEffect(() => {
         fetchMindmapNodes(mindmapId).catch(() => {});
+
+        const nodesChannel = supabase
+        .channel(`mindmap-${mindmapId}-nodes`)
+        .on(
+            "postgres_changes",
+            {
+            event: "*",
+            schema: "public",
+            table: "nodes",
+            filter: `mindmap_id=eq.${mindmapId}`,
+            },
+            () => {
+            fetchMindmapNodes(mindmapId).catch(() => {});
+            }
+        )
+        .subscribe();
+
+        const votesChannel = supabase
+        .channel(`mindmap-${mindmapId}-votes`)
+        .on(
+            "postgres_changes",
+            {
+            event: "*",
+            schema: "public",
+            table: "votes",
+            },
+            () => {
+            fetchMindmapNodes(mindmapId).catch(() => {});
+            }
+        )
+        .subscribe();
+
+        return () => {
+        supabase.removeChannel(nodesChannel);
+        supabase.removeChannel(votesChannel);
+        };
     }, [fetchMindmapNodes, mindmapId]);
 
     const handleAddChild = async (parentId: number) => {
