@@ -26,7 +26,12 @@ type MindmapState = {
   fetchMindmapNodes: (mindmapId: number) => Promise<void>;
   createMindmap: (title: string) => Promise<void>;
   deleteMindmap: (id: number) => Promise<void>;
-  createNode: (input: { mindmapId: number; title: string; content?: string; parent_id: number }) => Promise<void>;
+  createNode: (input: {
+    mindmapId: number;
+    title: string;
+    content?: string;
+    parent_id: number;
+  }) => Promise<number>;
   updateNode: (id: number, payload: Partial<Pick<NodeResponse, "title" | "content" | "x_position" | "y_position" | "parent_id" | "order_index">>) => Promise<void>;
   deleteNode: (id: number, mindmapId: number) => Promise<void>;
   toggleVote: (node: NodeResponse) => Promise<void>;
@@ -108,10 +113,12 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
     const { mindmapId } = input;
     set({ error: null });
     try {
-      await api.createNode(input);
+      const created = await api.createNode(input);
       await get().fetchMindmapNodes(mindmapId);
+      return created.id;
     } catch (err: any) {
       set({ error: err.message ?? "Failed to create node" });
+      throw err;
     }
   },
 
