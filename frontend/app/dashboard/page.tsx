@@ -8,19 +8,11 @@ import { Input } from "@/components/ui/input";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const {
-    mindmaps,
-    createMindmap,
-    deleteMindmap,
-    loading,
-    error,
-  } = useMindmapStore((state) => ({
-    mindmaps: state.mindmaps,
-    createMindmap: state.createMindmap,
-    deleteMindmap: state.deleteMindmap,
-    loading: state.loading,
-    error: state.error,
-  }));
+  const mindmaps = useMindmapStore((state) => state.mindmaps);
+  const createMindmap = useMindmapStore((state) => state.createMindmap);
+  const deleteMindmap = useMindmapStore((state) => state.deleteMindmap);
+  const loading = useMindmapStore((state) => state.loading);
+  const error = useMindmapStore((state) => state.error);
 
   const [title, setTitle] = useState("");
 

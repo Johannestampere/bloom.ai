@@ -50,14 +50,42 @@ async def create_mindmap(
         db.commit()
         db.refresh(root_node)
 
-        # Fetch the complete mindmap with nodes
         mindmap_with_nodes = db.query(MindMap).options(
             joinedload(MindMap.nodes)
         ).filter(MindMap.id == new_mindmap.id).first()
 
-        # Convert to response format
+        nodes_response = []
+        for node in sorted(mindmap_with_nodes.nodes, key=lambda n: n.order_index):
+            votes = db.query(Vote).filter(Vote.node_id == node.id).all()
+
+            node_data = {
+                "id": node.id,
+                "title": node.title,
+                "content": node.content,
+                "x_position": node.x_position,
+                "y_position": node.y_position,
+                "parent_id": node.parent_id,
+                "mindmap_id": node.mindmap_id,
+                "order_index": node.order_index,
+                "is_ai_generated": node.is_ai_generated,
+                "vote_count": len(votes),
+                "user_votes": [vote.user_id for vote in votes],
+                "created_at": node.created_at
+            }
+            nodes_response.append(node_data)
+
+        # Compute collaborators count (0 on creation, but keep logic consistent)
+        total_collaborators = db.query(Collaborator).filter(
+            Collaborator.mindmap_id == mindmap_with_nodes.id
+        ).count()
+
         response_data = {
             "id": mindmap_with_nodes.id,
+            "title": mindmap_with_nodes.name,
+            "nodes": nodes_response,
+            "owner_id": mindmap_with_nodes.owner_id,
+            "total_collaborators": total_collaborators,
+            "created_at": mindmap_with_nodes.created_at
         }
 
         return MindMapResponse(**response_data)
