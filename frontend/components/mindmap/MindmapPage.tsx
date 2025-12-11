@@ -98,14 +98,14 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
     };
 
     return (
-        <div className="flex h-full w-full flex-col">
+        <div className="flex h-full w-full flex-col min-h-0">
         <MindmapHeader
             mindmapId={mindmapId}
             isCollaboratorsOpen={activePanel === "collaborators"}
             onToggleCollaborators={toggleCollaboratorsPanel}
         />
-        <div className="flex flex-1">
-            <div className="flex-1">
+        <div className="flex flex-1 min-h-0">
+            <div className="flex-1 min-h-0">
             <MindmapCanvas mindmapId={mindmapId} onAddChild={handleAddChild} />
             </div>
             <div className="w-80 flex-shrink-0">

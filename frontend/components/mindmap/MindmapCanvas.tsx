@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, MouseEvent } from "react";
+import { useMemo, useState, useEffect, useRef, MouseEvent } from "react";
 import { useMindmapStore } from "@/lib/store";
 import { buildGraph } from "@/lib/graph";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -11,7 +11,7 @@ type MindmapCanvasProps = {
   onAddChild?: (parentId: number) => void;
 };
 
-const CANVAS_SIZE = 4000;
+const CANVAS_SIZE = 2200;
 const CANVAS_CENTER = CANVAS_SIZE / 2;
 
 export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
@@ -20,9 +20,24 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
   const setSelectedNodeId = useMindmapStore((state) => state.setSelectedNodeId);
 
   const [scale, setScale] = useState(1);
+  const [hasCentered, setHasCentered] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const nodes = nodesByMindmapId[mindmapId] ?? [];
   const graph = useMemo(() => buildGraph(nodes), [nodes]);
+
+  useEffect(() => {
+    if (hasCentered) return;
+    const el = containerRef.current;
+    if (!el) return;
+
+    const targetLeft = CANVAS_CENTER - el.clientWidth / 2;
+    const targetTop = CANVAS_CENTER - el.clientHeight / 2;
+
+    el.scrollLeft = Math.max(targetLeft, 0);
+    el.scrollTop = Math.max(targetTop, 0);
+    setHasCentered(true);
+  }, [hasCentered, mindmapId, graph]);
 
   const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     if (event.ctrlKey || event.metaKey) {
@@ -50,6 +65,7 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
 
   return (
     <div
+      ref={containerRef}
       className="relative h-full w-full overflow-auto bg-slate-950"
       onWheel={handleWheel}
       onClick={() => setSelectedNodeId(null)}
