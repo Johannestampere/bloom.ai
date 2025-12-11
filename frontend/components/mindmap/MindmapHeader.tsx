@@ -6,12 +6,19 @@ import { api } from "@/lib/api";
 import type { MindMapDetail } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 type MindmapHeaderProps = {
-  mindmapId: number;
+    mindmapId: number;
+    isCollaboratorsOpen: boolean;
+    onToggleCollaborators: () => void;
 };
 
-export function MindmapHeader({ mindmapId }: MindmapHeaderProps) {
+export function MindmapHeader({
+    mindmapId,
+    isCollaboratorsOpen,
+    onToggleCollaborators,
+}: MindmapHeaderProps) {
     const { currentUser, nodesByMindmapId, fetchMindmaps } = useMindmapStore(
         (state) => ({
         currentUser: state.currentUser,
@@ -127,7 +134,7 @@ export function MindmapHeader({ mindmapId }: MindmapHeaderProps) {
 
     return (
         <div className="border-b border-slate-800 bg-slate-900/70 px-6 py-3">
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
             <div className="flex flex-col text-xs text-slate-400">
             {loading && <span>Loading…</span>}
             {!loading && (
@@ -173,12 +180,25 @@ export function MindmapHeader({ mindmapId }: MindmapHeaderProps) {
             </div>
 
             <div className="flex flex-col items-end text-xs text-slate-400">
+          <div className="flex items-center gap-2">
             {roleLabel && <span>{roleLabel}</span>}
-            {mindmap && (
-                <span>
-                Created {new Date(mindmap.created_at).toLocaleDateString()}
-                </span>
-            )}
+            <Button
+              type="button"
+              variant="secondary"
+              className={cn(
+                "h-7 px-3 text-[11px]",
+                isCollaboratorsOpen && "border-emerald-400 text-emerald-200"
+              )}
+              onClick={onToggleCollaborators}
+            >
+              Collaborators
+            </Button>
+          </div>
+          {mindmap && (
+            <span className="mt-1">
+              Created {new Date(mindmap.created_at).toLocaleDateString()}
+            </span>
+          )}
             {error && (
                 <span className="text-[10px] text-red-300 max-w-xs text-right">
                 {error}
