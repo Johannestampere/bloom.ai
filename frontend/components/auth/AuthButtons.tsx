@@ -35,18 +35,13 @@ export function AuthButtons() {
   }
 
   return (
-    <div className="flex items-center gap-2 text-xs">
-      <span className="text-slate-400 truncate max-w-[140px]">
-        {currentUser.username}
-      </span>
-      <button
-        type="button"
-        onClick={handleSignOut}
-        className="text-[11px] text-slate-400 hover:text-slate-200"
-      >
-        Sign out
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={handleSignOut}
+      className="text-[11px] text-slate-400 hover:text-slate-200"
+    >
+      Sign out
+    </button>
   );
 }
 

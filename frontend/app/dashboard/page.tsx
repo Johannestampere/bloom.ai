@@ -47,7 +47,7 @@ export default function DashboardPage() {
     <div className="flex h-full w-full flex-col bg-slate-950 text-slate-50">
       <div className="border-b border-slate-800 px-6 py-4 flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight">Mindmaps</h1>
+          <h1 className="text-lg font-semibold tracking-tight">Your mindmaps</h1>
         </div>
         <form onSubmit={handleCreate} className="flex items-center gap-2">
           <Input
