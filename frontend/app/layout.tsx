@@ -15,9 +15,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-slate-950 text-slate-50 antialiased">
+      <body className="h-screen overflow-hidden bg-slate-950 text-slate-50 antialiased">
         <AuthShell>
-          <div className="flex min-h-screen flex-col">
+          <div className="flex h-screen flex-col">
             <header className="h-14 border-b border-slate-800 bg-slate-900/60 px-6 flex items-center justify-between">
               <div className="text-sm font-semibold tracking-tight text-slate-100">
                 MindBloom

@@ -110,14 +110,116 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
   },
 
   async createNode(input) {
-    const { mindmapId } = input;
+    const { mindmapId, parent_id, title, content } = input;
     set({ error: null });
+
+    // Optimistic: create a temporary node in the UI immediately
+    const tempId = Date.now();
+    const state = get();
+    const existing = state.nodesByMindmapId[mindmapId] ?? [];
+    const parent = existing.find((n) => n.id === parent_id) ?? null;
+
+    let x_position = 0;
+    let y_position = 0;
+    let order_index = existing.filter((n) => n.parent_id === parent_id).length;
+
+    if (parent) {
+      // Compute depth of parent from the root (parent_id === null)
+      let depth = 0;
+      let current: NodeResponse | undefined = parent;
+      const MAX_DEPTH = 32;
+      while (current && current.parent_id !== null && depth < MAX_DEPTH) {
+        const next = existing.find((n) => n.id === current!.parent_id!) as | NodeResponse | undefined;
+        if (!next) break;
+        depth += 1;
+        current = next;
+      }
+
+      const BASE_RADIUS = 300;
+      const RADIUS_INCREMENT = 150;
+      const ANGLES = [0, 180, 90, 270, 45, 135, 225, 315];
+
+      const radius = BASE_RADIUS + depth * RADIUS_INCREMENT;
+      const childrenPerShell = ANGLES.length;
+      const shell = Math.floor(order_index / childrenPerShell);
+      const angleIndex = order_index % childrenPerShell;
+      const angleDeg = ANGLES[angleIndex];
+      const angleRad = (angleDeg * Math.PI) / 180;
+      const childRadius = radius + shell * 120;
+
+      x_position = parent.x_position + childRadius * Math.cos(angleRad);
+      y_position = parent.y_position + childRadius * Math.sin(angleRad);
+    }
+
+    const optimisticNode: NodeResponse = {
+      id: tempId,
+      mindmap_id: mindmapId,
+      parent_id,
+      title: title ?? "",
+      content: content ?? "",
+      x_position,
+      y_position,
+      order_index,
+      is_ai_generated: false,
+      vote_count: 0,
+      user_votes: [],
+      created_at: new Date().toISOString(),
+    };
+
+    // Insert optimistic node immediately
+    set({
+      nodesByMindmapId: {
+        ...state.nodesByMindmapId,
+        [mindmapId]: [...existing, optimisticNode],
+      },
+    });
+
     try {
       const created = await api.createNode(input);
-      await get().fetchMindmapNodes(mindmapId);
+      // When backend returns, replace optimistic node with real one.
+      set((s) => {
+        const list = s.nodesByMindmapId[mindmapId] ?? [];
+        const withoutTemp = list.filter((n) => n.id !== tempId);
+        // We don't yet know final layout positions here; they will be
+        // refreshed via Supabase Realtime + fetchMindmapNodes.
+        // For now, just ensure the real node exists in the list.
+        const hasReal = withoutTemp.some((n) => n.id === created.id);
+        const next = hasReal
+          ? withoutTemp
+          : [
+              ...withoutTemp,
+              {
+                ...optimisticNode,
+                id: created.id,
+                mindmap_id: created.mindmap_id,
+                x_position: created.x_position,
+                y_position: created.y_position,
+                order_index: created.order_index,
+                created_at: created.created_at,
+              },
+            ];
+
+        return {
+          nodesByMindmapId: {
+            ...s.nodesByMindmapId,
+            [mindmapId]: next,
+          },
+        };
+      });
+
       return created.id;
     } catch (err: any) {
-      set({ error: err.message ?? "Failed to create node" });
+      // Roll back optimistic node on failure
+      set((s) => {
+        const list = s.nodesByMindmapId[mindmapId] ?? [];
+        return {
+          nodesByMindmapId: {
+            ...s.nodesByMindmapId,
+            [mindmapId]: list.filter((n) => n.id !== tempId),
+          },
+          error: err.message ?? "Failed to create node",
+        };
+      });
       throw err;
     }
   },

@@ -77,7 +77,7 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
         try {
         const newId = await createNode({
             mindmapId,
-            title: "",
+            title: "New node",
             content: "",
             parent_id: parentId,
         });

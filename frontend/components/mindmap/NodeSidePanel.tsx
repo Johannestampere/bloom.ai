@@ -114,8 +114,8 @@ export function NodeSidePanel({
 
   return (
     <div className="h-full border-l border-slate-800 bg-slate-900/60 p-4">
-      <Panel title="Node details" className="h-full bg-slate-900/80">
-        <div className="flex h-full flex-col gap-4">
+      <Panel title="Node details" className="flex h-full flex-col bg-slate-900/80">
+        <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
           <div className="space-y-1">
             <label className="block text-xs font-medium text-slate-300">
               Title
@@ -190,16 +190,16 @@ export function NodeSidePanel({
             )}
           </div>
 
-          <div className="mt-auto border-t border-slate-800 pt-3">
-            <Button
-              type="button"
-              variant="secondary"
-              className="h-8 px-3 text-[11px] text-red-300 border-red-500/60 hover:text-red-200 hover:border-red-400"
-              onClick={handleDelete}
-            >
-              Delete node
-            </Button>
-          </div>
+        </div>
+        <div className="mt-3 border-t border-slate-800 pt-3">
+          <Button
+            type="button"
+            variant="secondary"
+            className="h-8 w-full px-3 text-[11px] text-red-300 border-red-500/60 hover:text-red-200 hover:border-red-400"
+            onClick={handleDelete}
+          >
+            Delete node
+          </Button>
         </div>
       </Panel>
     </div>
