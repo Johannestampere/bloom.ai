@@ -13,5 +13,13 @@ class MindMap(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     creator = relationship("User", back_populates="mindmaps")
-    nodes = relationship("Node", back_populates="mindmap")
-    collaborators = relationship("Collaborator", back_populates="mindmap", cascade="all, delete-orphan")
+    nodes = relationship(
+        "Node",
+        back_populates="mindmap",
+        cascade="all, delete-orphan",
+    )
+    collaborators = relationship(
+        "Collaborator",
+        back_populates="mindmap",
+        cascade="all, delete-orphan",
+    )

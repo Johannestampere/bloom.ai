@@ -8,7 +8,7 @@ class Node(Base):
     __tablename__ = "nodes"
     id = Column(Integer, primary_key=True)
     mindmap_id = Column(Integer, ForeignKey("mindmaps.id"), nullable=False)
-    parent_id = Column(Integer, ForeignKey("nodes.id"), nullable=True)
+    parent_id = Column(Integer, ForeignKey("nodes.id", ondelete="CASCADE"), nullable=True)
     order_index = Column(Integer, nullable=False, server_default="0")
     title = Column(String, nullable=False)
     content = Column(String, nullable=True)
