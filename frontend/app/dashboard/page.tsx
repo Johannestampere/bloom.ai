@@ -11,21 +11,35 @@ export default function DashboardPage() {
   const mindmaps = useMindmapStore((state) => state.mindmaps);
   const createMindmap = useMindmapStore((state) => state.createMindmap);
   const deleteMindmap = useMindmapStore((state) => state.deleteMindmap);
+  const currentUser = useMindmapStore((state) => state.currentUser);
+  const authReady = useMindmapStore((state) => state.authReady);
   const loading = useMindmapStore((state) => state.loading);
   const error = useMindmapStore((state) => state.error);
 
   const [title, setTitle] = useState("");
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   useEffect(() => {
+    if (!authReady || !currentUser) return;
+
     const load = async () => {
       try {
         await useMindmapStore.getState().fetchMindmaps();
       } catch {
         // error is already stored in Zustand
+      } finally {
+        setHasLoadedOnce(true);
       }
     };
     load().catch(() => {});
-  }, []);
+  }, [authReady, currentUser]);
+
+  useEffect(() => {
+    if (!authReady) return;
+    if (!currentUser) {
+      router.push("/");
+    }
+  }, [authReady, currentUser, router]);
 
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
@@ -106,7 +120,7 @@ export default function DashboardPage() {
             </div>
           ))}
 
-          {mindmaps.length === 0 && !loading && (
+          {mindmaps.length === 0 && !loading && hasLoadedOnce && (
             <div className="px-6 py-8 text-sm text-slate-400">
               No mindmaps yet. Use the form above to create your first mindmap.
             </div>

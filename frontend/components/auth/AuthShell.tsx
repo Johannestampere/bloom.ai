@@ -9,11 +9,11 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const syncUser = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
+
       if (session?.user) {
         const user = session.user;
+
         const username =
           (user.user_metadata as any)?.username ||
           (user.user_metadata as any)?.full_name ||
@@ -33,9 +33,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
   }, [setCurrentUser]);
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         const user = session.user;
         const username =
@@ -61,5 +59,3 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
-
-

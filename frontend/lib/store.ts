@@ -12,6 +12,7 @@ import { api } from "./api";
 type MindmapState = {
   // States
   currentUser: CurrentUser | null;
+  authReady: boolean;
   mindmaps: MindMapListItem[];
   nodesByMindmapId: Record<number, NodeResponse[]>;
   selectedNodeId: number | null;
@@ -44,6 +45,7 @@ type MindmapState = {
 // Creating the Zustand store for the global mindmap state
 export const useMindmapStore = create<MindmapState>((set, get) => ({
   currentUser: null,
+  authReady: false,
   mindmaps: [],
   nodesByMindmapId: {},
   selectedNodeId: null,
@@ -52,7 +54,7 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
   error: null,
 
   setCurrentUser(user) {
-    set({ currentUser: user });
+    set({ currentUser: user, authReady: true });
   },
 
   setSelectedNodeId(id) {
