@@ -83,7 +83,7 @@ export function MindmapHeader({
         if (!canEditTitle) return;
         setIsEditing(true);
     };
-
+ 
     const saveTitle = async () => {
         if (!mindmap || !canEditTitle) {
             setIsEditing(false);

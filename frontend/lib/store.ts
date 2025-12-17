@@ -131,21 +131,43 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
       let current: NodeResponse | undefined = parent;
       const MAX_DEPTH = 32;
       while (current && current.parent_id !== null && depth < MAX_DEPTH) {
-        const next = existing.find((n) => n.id === current!.parent_id!) as | NodeResponse | undefined;
+        const next = existing.find(
+          (n) => n.id === current!.parent_id!
+        ) as NodeResponse | undefined;
         if (!next) break;
         depth += 1;
         current = next;
       }
 
+      // Mirror backend layout constants so optimistic positions roughly match
+      // the canonical layout computed in backend/app/utils/layout.py
       const BASE_RADIUS = 300;
       const RADIUS_INCREMENT = 150;
-      const ANGLES = [0, 180, 90, 270, 45, 135, 225, 315];
+      // Same ANGLES and shell logic as backend ANGLES in compute_layout()
+      const ANGLES = [0, 90, 45, 135, 225, 315];
 
       const radius = BASE_RADIUS + depth * RADIUS_INCREMENT;
       const childrenPerShell = ANGLES.length;
       const shell = Math.floor(order_index / childrenPerShell);
       const angleIndex = order_index % childrenPerShell;
-      const angleDeg = ANGLES[angleIndex];
+
+      // Determine the parent's absolute "outward" direction in degrees.
+      // For the root, this is 0°. For deeper nodes, infer it from the
+      // vector from grandparent -> parent, based on current positions.
+      let parentAngleDeg = 0;
+      if (parent.parent_id !== null) {
+        const grandparent = existing.find(
+          (n) => n.id === parent.parent_id
+        ) as NodeResponse | undefined;
+        if (grandparent) {
+          const dx = parent.x_position - grandparent.x_position;
+          const dy = parent.y_position - grandparent.y_position;
+          parentAngleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
+        }
+      }
+
+      const localAngleDeg = ANGLES[angleIndex];
+      const angleDeg = (parentAngleDeg + localAngleDeg) % 360;
       const angleRad = (angleDeg * Math.PI) / 180;
       const childRadius = radius + shell * 120;
 

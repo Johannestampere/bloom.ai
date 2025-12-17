@@ -150,7 +150,6 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
           })}
         </svg>
 
-        {/* Nodes */}
         {Object.values(graph.nodesById).map((node) => {
           const left = CANVAS_CENTER + node.x;
           const top = CANVAS_CENTER + node.y;

@@ -2,10 +2,11 @@
 
 import { supabase } from "@/lib/supabase";
 import { useMindmapStore } from "@/lib/store";
+import { useRouter } from "next/navigation";
 
 export function AuthButtons() {
   const currentUser = useMindmapStore((state) => state.currentUser);
-
+  const router = useRouter();
   const handleSignIn = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -20,6 +21,7 @@ export function AuthButtons() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    router.push("/");
   };
 
   if (!currentUser) {

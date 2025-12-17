@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from ..models import Node
 import math
 
-ANGLES = [0, 180, 90, 270, 45, 135, 225, 315]
+ANGLES = [0, 90, 45, 135, 225, 315]
 BASE_RADIUS = 300 # distance for depth = 1 nodes
 RADIUS_INCREMENT = 150 # each deeper level adds 150 in radius
 
@@ -105,14 +105,22 @@ def compute_layout(tree: Any) -> Dict[int, Tuple[float, float]]:
     children = tree["children"]
     depth_map = tree["depth"]
 
+    # Absolute positions of each node in the global canvas coordinate system.
     positions: Dict[int, Tuple[float, float]] = {}
+    # Absolute outward angle for each node, ie the direction
+    # from its parent to the node in global space. The root defines the origin
+    # of the angular frame and is treated as pointing to 0 degrees.
+    directions: Dict[int, float] = {}
+
     positions[root.id] = (0.0, 0.0)
+    directions[root.id] = 0.0
 
     queue = [root]
 
     while queue:
         parent = queue.pop(0)
         parent_x, parent_y = positions[parent.id]
+        parent_angle = directions.get(parent.id, 0.0)
         child_list = children[parent.id]
 
         if not child_list:
@@ -122,14 +130,16 @@ def compute_layout(tree: Any) -> Dict[int, Tuple[float, float]]:
 
         radius = BASE_RADIUS + parent_depth * RADIUS_INCREMENT
 
-        total_children = len(child_list)
         children_per_shell = len(ANGLES)
 
         for index, child in enumerate(child_list):
             shell = index // children_per_shell
             angle_index = index % children_per_shell
-
-            angle_deg = ANGLES[angle_index]
+            # Compute this child's angle in the local frame of the parent,
+            # then rotate it by the parent's absolute direction so that
+            # 0 deg always means further out from the parent in global space.
+            local_angle_deg = ANGLES[angle_index]
+            angle_deg = (parent_angle + local_angle_deg) % 360
             angle_rad = math.radians(angle_deg)
 
             child_radius = radius + shell * 120
@@ -138,6 +148,9 @@ def compute_layout(tree: Any) -> Dict[int, Tuple[float, float]]:
             child_y = parent_y + child_radius * math.sin(angle_rad)
 
             positions[child.id] = (child_x, child_y)
+            # Store this child's absolute outward direction so that its own
+            # children can be arranged relative to it in the next level
+            directions[child.id] = angle_deg
 
             queue.append(child)
 
