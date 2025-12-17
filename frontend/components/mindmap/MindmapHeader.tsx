@@ -130,78 +130,71 @@ export function MindmapHeader({
 
     return (
         <div className="border-b border-slate-800 bg-slate-900/70 px-6 py-3">
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
-            <div className="flex flex-col text-xs text-slate-400">
-            {loading && <span>Loading…</span>}
-            {!loading && (
-                <>
-                <span>
-                    {nodeCount} node{nodeCount === 1 ? "" : "s"}
-                </span>
-                <span>
-                    {collaboratorCount} collaborator
-                    {collaboratorCount === 1 ? "" : "s"}
-                </span>
-                </>
-            )}
-            </div>
+            <div className="flex w-full items-center justify-between gap-4">
+                {/* Left: stats */}
+                <div className="flex w-48 flex-col text-xs text-slate-400">
+                    {loading && <span>Loading…</span>}
+                    {!loading && (
+                        <span>
+                            {nodeCount} node{nodeCount === 1 ? "" : "s"} ·{" "}
+                            {collaboratorCount} collaborator
+                            {collaboratorCount === 1 ? "" : "s"}
+                        </span>
+                    )}
+                </div>
 
-            <div className="flex-1">
-            {isEditing ? (
-                <Input
-                ref={titleRef}
-                value={titleInput}
-                onChange={(e) => setTitleInput(e.target.value)}
-                onBlur={saveTitle}
-                onKeyDown={handleTitleKeyDown}
-                disabled={saving}
-                className={cn(
-                    "mx-auto w-full max-w-md border-none bg-transparent text-center text-base font-semibold tracking-tight text-slate-50 focus-visible:ring-0 focus-visible:border-0"
-                )}
-                />
-            ) : (
-                <button
-                type="button"
-                onClick={startEditing}
-                className={cn(
-                    "mx-auto block max-w-md truncate text-center text-base font-semibold tracking-tight",
-                    canEditTitle
-                    ? "text-slate-50 hover:text-emerald-300"
-                    : "text-slate-200 cursor-default"
-                )}
-                >
-                {mindmap ? mindmap.title : loading ? "Loading…" : "Mindmap"}
-                </button>
-            )}
-            </div>
+                <div className="flex-1 flex justify-center">
+                    {isEditing ? (
+                        <Input
+                            ref={titleRef}
+                            value={titleInput}
+                            onChange={(e) => setTitleInput(e.target.value)}
+                            onBlur={saveTitle}
+                            onKeyDown={handleTitleKeyDown}
+                            disabled={saving}
+                            className={cn(
+                                "mx-auto w-full max-w-md border-none bg-transparent text-center text-base font-semibold tracking-tight text-slate-50 focus-visible:ring-0 focus-visible:border-0"
+                            )}
+                        />
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={startEditing}
+                            className={cn(
+                                "mx-auto block max-w-md truncate text-center text-base font-semibold tracking-tight",
+                                canEditTitle
+                                    ? "text-slate-50 hover:text-emerald-300"
+                                    : "text-slate-200 cursor-default"
+                            )}
+                        >
+                            {mindmap ? mindmap.title : loading ? "Loading…" : "Mindmap"}
+                        </button>
+                    )}
+                </div>
 
-            <div className="flex flex-col items-end text-xs text-slate-400">
-          <div className="flex items-center gap-2">
-            {roleLabel && <span>{roleLabel}</span>}
-            <Button
-              type="button"
-              variant="secondary"
-              className={cn(
-                "h-7 px-3 text-[11px]",
-                isCollaboratorsOpen && "border-emerald-400 text-emerald-200"
-              )}
-              onClick={onToggleCollaborators}
-            >
-              Collaborators
-            </Button>
-          </div>
-          {mindmap && (
-            <span className="mt-1">
-              Created {new Date(mindmap.created_at).toLocaleDateString()}
-            </span>
-          )}
-            {error && (
-                <span className="text-[10px] text-red-300 max-w-xs text-right">
-                {error}
-                </span>
-            )}
+                {/* Right: collaborators */}
+                <div className="flex w-48 flex-col items-end text-xs text-slate-400">
+                    <div className="flex items-center gap-2">
+                        {roleLabel && <span>{roleLabel}</span>}
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            className={cn(
+                                "h-7 px-3 text-[11px]",
+                                isCollaboratorsOpen && "border-emerald-400 text-emerald-200"
+                            )}
+                            onClick={onToggleCollaborators}
+                        >
+                            Collaborators
+                        </Button>
+                    </div>
+                    {error && (
+                        <span className="mt-1 max-w-xs text-right text-[10px] text-red-300">
+                            {error}
+                        </span>
+                    )}
+                </div>
             </div>
-        </div>
         </div>
     );
 }
