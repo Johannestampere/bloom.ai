@@ -91,9 +91,7 @@ def compute_layout(tree: Any) -> Dict[int, Tuple[float, float]]:
     Output:
         A dictionary mapping: node_id -> (x_position, y_position)
 
-    This is where the actual tree layout algorithm will live:
-      - Simple layered layout
-      - Reingold-Tilford “tidy tree” algo
+    Will prolly become Reingold-Tilford later but im just gonna use a simple layout algo for now
 
     For correctness, layout must be recalculated for the entire mindmap every time,
     because adding one node can shift siblings, subtrees, or even global spacing.
@@ -107,6 +105,7 @@ def compute_layout(tree: Any) -> Dict[int, Tuple[float, float]]:
 
     # Absolute positions of each node in the global canvas coordinate system.
     positions: Dict[int, Tuple[float, float]] = {}
+    
     # Absolute outward angle for each node, ie the direction
     # from its parent to the node in global space. The root defines the origin
     # of the angular frame and is treated as pointing to 0 degrees.

@@ -45,7 +45,6 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
     setHasCentered(true);
   }, [hasCentered, mindmapId, graph]);
 
-  // Zoom only on pinch (trackpad / touchpad) – browsers surface this as wheel with ctrlKey/metaKey.
   const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     if (!event.ctrlKey && !event.metaKey) return;
     event.preventDefault();
@@ -122,7 +121,6 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
           transformOrigin: "center center",
         }}
       >
-        {/* Edges */}
         <svg
           className="pointer-events-none absolute inset-0"
           width={CANVAS_SIZE}
