@@ -11,32 +11,15 @@ from sqlalchemy.orm import Session
 from ..models import Node
 import math
 
-ANGLES = [0, 90, 45, 135, 225, 315]
-BASE_RADIUS = 300 # distance for depth = 1 nodes
-RADIUS_INCREMENT = 150 # each deeper level adds 150 in radius
+BASE_RADIUS = 250
+RADIUS_INCREMENT = 180
+MIN_NODE_SPACING = 80
 
 def load_tree(db: Session, mindmap_id: int) -> Any:
-    """
-    Load all nodes in a mindmap and build a full parent->children tree structure.
-
-    This function prepares the hierarchical representation required by the layout engine. It will:
-
-        1. Fetch all nodes for the given mindmap
-        2. Identify the root node (the one with parent_id = None)
-        3. Build an adjacency structure of the form:
-            {
-                root_id: [child_node_1, child_node_2, ...],
-                child_node_1_id: [...],
-                ...
-            }
-       4. Include metadata such as:
-            - sibling order via order_index
-            - a direct reference to the root node object
-
+    """Load all nodes in a mindmap and build a full parent->children tree structure.
     The returned structure is what compute_layout() will use to produce (x, y) coordinates,
     since tree-based layout algorithms require knowing the full hierarchy of parents
-    and children.
-    """
+    and children."""
     nodes: List[Node] = db.query(Node).filter(Node.mindmap_id == mindmap_id).all()
 
     if not nodes:
@@ -81,95 +64,121 @@ def load_tree(db: Session, mindmap_id: int) -> Any:
         "nodes": nodes_by_id
     }
 
+def _compute_subtree_sizes(node_id: int, children: Dict[int, List[Any]]) -> Dict[int, int]:
+    """Compute the size of each subtree (number of descendant nodes + 1 for the node itself).
+    Larger subtrees need more angular space in the radial layout."""
+    sizes: Dict[int, int] = {}
+
+    def dfs(node_id: int) -> int:
+        size = 1
+        for child in children[node_id]:
+            size += dfs(child.id)
+        sizes[node_id] = size
+        return size
+
+    dfs(node_id)
+    return sizes
+
+
 def compute_layout(tree: Any) -> Dict[int, Tuple[float, float]]:
     """
-    Compute the canonical (x, y) coordinates for every node in the mindmap.
+    Compute the canonical (x, y) coordinates for every node using a radial tree layout.
 
-    Input:
-        The output of load_tree(), containing a full hierarchy (root node, children mapping, depth info, etc)
-
-    Output:
-        A dictionary mapping: node_id -> (x_position, y_position)
-
-    Will prolly become Reingold-Tilford later but im just gonna use a simple layout algo for now
-
-    For correctness, layout must be recalculated for the entire mindmap every time,
-    because adding one node can shift siblings, subtrees, or even global spacing.
+    Algorithm:
+        1. Compute subtree sizes for each node (used to allocate angular space)
+        2. Root is placed at origin (0, 0) and owns the full 360 deg circle
+        3. Each node's children are allocated areas proportional to their subtree size
+        4. Children are placed at the center of their area, at a fixed radius from parent
+        5. Each child inherits a narrower angular range to distribute to its own children
     """
     if not tree or tree["root"] is None:
         return {}
-    
+
     root = tree["root"]
     children = tree["children"]
     depth_map = tree["depth"]
 
-    # Absolute positions of each node in the global canvas coordinate system.
+    subtree_sizes = _compute_subtree_sizes(root.id, children)
+
     positions: Dict[int, Tuple[float, float]] = {}
-    
-    # Absolute outward angle for each node, ie the direction
-    # from its parent to the node in global space. The root defines the origin
-    # of the angular frame and is treated as pointing to 0 degrees.
-    directions: Dict[int, float] = {}
+
+    # Each node is assigned an angular wedge: (start_angle, end_angle) in radians
+    # The node is positioned at the center of its wedge
+    wedges: Dict[int, Tuple[float, float]] = {}
 
     positions[root.id] = (0.0, 0.0)
-    directions[root.id] = 0.0
+    wedges[root.id] = (0.0, 2 * math.pi)
 
     queue = [root]
 
     while queue:
         parent = queue.pop(0)
         parent_x, parent_y = positions[parent.id]
-        parent_angle = directions.get(parent.id, 0.0)
+        parent_start, parent_end = wedges[parent.id]
         child_list = children[parent.id]
 
         if not child_list:
             continue
-            
-        parent_depth = depth_map[parent.id]
 
+        parent_depth = depth_map[parent.id]
         radius = BASE_RADIUS + parent_depth * RADIUS_INCREMENT
 
-        children_per_shell = len(ANGLES)
+        # For root's children, use the full circle
+        # For deeper nodes, use the parent's wedge
+        if parent_depth == 0:
+            available_start = 0.0
+            available_end = 2 * math.pi
+        else:
+            # Children spread within a cone extending from the parent's direction
+            parent_angle = (parent_start + parent_end) / 2
+            spread = min((parent_end - parent_start), math.pi)  # Max 180 deg spread for children
+            available_start = parent_angle - spread / 2
+            available_end = parent_angle + spread / 2
 
-        for index, child in enumerate(child_list):
-            shell = index // children_per_shell
-            angle_index = index % children_per_shell
-            # Compute this child's angle in the local frame of the parent,
-            # then rotate it by the parent's absolute direction so that
-            # 0 deg always means further out from the parent in global space.
-            local_angle_deg = ANGLES[angle_index]
-            angle_deg = (parent_angle + local_angle_deg) % 360
-            angle_rad = math.radians(angle_deg)
+        available_range = available_end - available_start
 
-            child_radius = radius + shell * 120
+        # Calculate total subtree weight for proportional distribution
+        total_weight = sum(subtree_sizes[child.id] for child in child_list)
 
-            child_x = parent_x + child_radius * math.cos(angle_rad)
-            child_y = parent_y + child_radius * math.sin(angle_rad)
+        # Ensure minimum angular spacing between nodes
+        min_angle_per_child = MIN_NODE_SPACING / radius if radius > 0 else 0.1
+        min_total_angle = min_angle_per_child * len(child_list)
+
+        # If we need more space than available, expand the range
+        if min_total_angle > available_range:
+            extra = (min_total_angle - available_range) / 2
+            available_start -= extra
+            available_end += extra
+            available_range = available_end - available_start
+
+        current_angle = available_start
+
+        for child in child_list:
+            child_weight = subtree_sizes[child.id]
+
+            # Allocate angular space proportional to subtree size
+            child_range = (child_weight / total_weight) * available_range
+
+            # Ensure minimum spacing
+            child_range = max(child_range, min_angle_per_child)
+
+            child_start = current_angle
+            child_end = current_angle + child_range
+            child_angle = (child_start + child_end) / 2
+
+            child_x = parent_x + radius * math.cos(child_angle)
+            child_y = parent_y + radius * math.sin(child_angle)
 
             positions[child.id] = (child_x, child_y)
-            # Store this child's absolute outward direction so that its own
-            # children can be arranged relative to it in the next level
-            directions[child.id] = angle_deg
+            wedges[child.id] = (child_start, child_end)
 
+            current_angle = child_end
             queue.append(child)
 
     return positions
 
 
 def apply_layout(db: Session, positions: Dict[int, Tuple[float, float]]) -> None:
-    """
-    Persist the computed layout positions into the database.
-
-    Input:
-        A dict mapping node_id -> (x, y) produced by compute_layout()
-
-    This function will:
-      - Iterate through every node included in 'positions'
-      - Update Node.x_position and Node.y_position fields in the database
-      - Commit these changes so that:
-          * Supabase Realtime can broadcast updates to all clients
-          * The frontend always renders the same canonical layout
-    """
     if not positions:
         return
 

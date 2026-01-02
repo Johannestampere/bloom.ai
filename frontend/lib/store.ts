@@ -139,22 +139,16 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
         current = next;
       }
 
-      // Mirror backend layout constants so optimistic positions roughly match
-      // the canonical layout computed in backend/app/utils/layout.py
-      const BASE_RADIUS = 300;
-      const RADIUS_INCREMENT = 150;
-      // Same ANGLES and shell logic as backend ANGLES in compute_layout()
-      const ANGLES = [0, 90, 45, 135, 225, 315];
-
+      // Mirror backend layout constants from backend/app/utils/layout.py
+      const BASE_RADIUS = 250;
+      const RADIUS_INCREMENT = 180;
       const radius = BASE_RADIUS + depth * RADIUS_INCREMENT;
-      const childrenPerShell = ANGLES.length;
-      const shell = Math.floor(order_index / childrenPerShell);
-      const angleIndex = order_index % childrenPerShell;
 
-      // Determine the parent's absolute "outward" direction in degrees.
-      // For the root, this is 0°. For deeper nodes, infer it from the
-      // vector from grandparent -> parent, based on current positions.
-      let parentAngleDeg = 0;
+      // Get siblings (nodes with same parent)
+      const siblings = existing.filter((n) => n.parent_id === parent_id);
+      const siblingCount = siblings.length + 1; // +1 for the new node
+
+      let parentAngle = 0;
       if (parent.parent_id !== null) {
         const grandparent = existing.find(
           (n) => n.id === parent.parent_id
@@ -162,17 +156,32 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
         if (grandparent) {
           const dx = parent.x_position - grandparent.x_position;
           const dy = parent.y_position - grandparent.y_position;
-          parentAngleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
+          parentAngle = Math.atan2(dy, dx);
         }
       }
 
-      const localAngleDeg = ANGLES[angleIndex];
-      const angleDeg = (parentAngleDeg + localAngleDeg) % 360;
-      const angleRad = (angleDeg * Math.PI) / 180;
-      const childRadius = radius + shell * 120;
+      // For root's children, use full circle; otherwise spread within parent's cone
+      let availableStart: number;
+      let availableEnd: number;
 
-      x_position = parent.x_position + childRadius * Math.cos(angleRad);
-      y_position = parent.y_position + childRadius * Math.sin(angleRad);
+      if (parent.parent_id === null) {
+        // Parent is root - children spread around full circle
+        availableStart = 0;
+        availableEnd = 2 * Math.PI;
+      } else {
+        // Spread children within a cone (max 180 degrees)
+        const spread = Math.PI; // 180 degrees max
+        availableStart = parentAngle - spread / 2;
+        availableEnd = parentAngle + spread / 2;
+      }
+
+      // Place new node evenly among siblings
+      const availableRange = availableEnd - availableStart;
+      const angleStep = availableRange / siblingCount;
+      const childAngle = availableStart + angleStep * (order_index + 0.5);
+
+      x_position = parent.x_position + radius * Math.cos(childAngle);
+      y_position = parent.y_position + radius * Math.sin(childAngle);
     }
 
     const optimisticNode: NodeResponse = {

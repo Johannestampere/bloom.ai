@@ -130,17 +130,46 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
             const source = graph.nodesById[edge.source];
             const target = graph.nodesById[edge.target];
             if (!source || !target) return null;
-            const x1 = CANVAS_CENTER + source.x;
-            const y1 = CANVAS_CENTER + source.y;
-            const x2 = CANVAS_CENTER + target.x;
-            const y2 = CANVAS_CENTER + target.y;
+
+            const sx = CANVAS_CENTER + source.x;
+            const sy = CANVAS_CENTER + source.y;
+            const tx = CANVAS_CENTER + target.x;
+            const ty = CANVAS_CENTER + target.y;
+
+            // Calculate direction vector from source to target
+            const dx = tx - sx;
+            const dy = ty - sy;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist === 0) return null;
+
+            // Normalize direction
+            const nx = dx / dist;
+            const ny = dy / dist;
+
+            // Node dimensions
+            const nodeRadiusX = 60;
+            const nodeRadiusY = 16;
+
+            // Calculate edge intersection for ellipse-like shape
+            // Using ellipse formula to find where the line exits the node
+            const getEdgePoint = (cx: number, cy: number, dirX: number, dirY: number) => {
+              const t = 1 / Math.sqrt((dirX * dirX) / (nodeRadiusX * nodeRadiusX) + (dirY * dirY) / (nodeRadiusY * nodeRadiusY));
+              return {
+                x: cx + dirX * t,
+                y: cy + dirY * t,
+              };
+            };
+
+            const start = getEdgePoint(sx, sy, nx, ny);
+            const end = getEdgePoint(tx, ty, -nx, -ny);
+
             return (
               <line
                 key={edge.id}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
+                x1={start.x}
+                y1={start.y}
+                x2={end.x}
+                y2={end.y}
                 stroke="#334155"
                 strokeWidth={1.5}
               />
