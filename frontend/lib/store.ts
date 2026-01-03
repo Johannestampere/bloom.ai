@@ -283,10 +283,23 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
       await api.deleteNode(id);
       set((state) => {
         const existing = state.nodesByMindmapId[mindmapId] ?? [];
+
+        const idsToRemove = new Set<number>([id]);
+        let changed = true;
+        while (changed) {
+          changed = false;
+          for (const node of existing) {
+            if (node.parent_id !== null && idsToRemove.has(node.parent_id) && !idsToRemove.has(node.id)) {
+              idsToRemove.add(node.id);
+              changed = true;
+            }
+          }
+        }
+
         return {
           nodesByMindmapId: {
             ...state.nodesByMindmapId,
-            [mindmapId]: existing.filter((n) => n.id !== id),
+            [mindmapId]: existing.filter((n) => !idsToRemove.has(n.id)),
           },
         };
       });
