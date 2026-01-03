@@ -11,7 +11,7 @@ type MindmapCanvasProps = {
   onAddChild?: (parentId: number) => void;
 };
 
-const CANVAS_SIZE = 1000;
+const CANVAS_SIZE = 3000;
 const CANVAS_CENTER = CANVAS_SIZE / 2;
 
 export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
@@ -25,6 +25,13 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
   const panStateRef = useRef<{
     startX: number;
     startY: number;
+    scrollLeft: number;
+    scrollTop: number;
+  } | null>(null);
+  const touchStateRef = useRef<{
+    lastDistance: number;
+    lastCenterX: number;
+    lastCenterY: number;
     scrollLeft: number;
     scrollTop: number;
   } | null>(null);
@@ -109,10 +116,93 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
     panStateRef.current = null;
   };
 
+  // Touch gesture handlers for pinch-to-zoom
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const getDistance = (t1: Touch, t2: Touch) => {
+      const dx = t1.clientX - t2.clientX;
+      const dy = t1.clientY - t2.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const getCenter = (t1: Touch, t2: Touch) => ({
+      x: (t1.clientX + t2.clientX) / 2,
+      y: (t1.clientY + t2.clientY) / 2,
+    });
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        const center = getCenter(t1, t2);
+        touchStateRef.current = {
+          lastDistance: getDistance(t1, t2),
+          lastCenterX: center.x,
+          lastCenterY: center.y,
+          scrollLeft: el.scrollLeft,
+          scrollTop: el.scrollTop,
+        };
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && touchStateRef.current) {
+        e.preventDefault();
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        const distance = getDistance(t1, t2);
+        const center = getCenter(t1, t2);
+        const state = touchStateRef.current;
+
+        // Pinch to zoom
+        const scaleFactor = distance / state.lastDistance;
+        setScale((prev) => {
+          const next = prev * scaleFactor;
+          return Math.min(3, Math.max(0.3, next));
+        });
+
+        // Two-finger pan
+        const dx = center.x - state.lastCenterX;
+        const dy = center.y - state.lastCenterY;
+        el.scrollLeft = state.scrollLeft - dx;
+        el.scrollTop = state.scrollTop - dy;
+
+        // Update state for next move
+        touchStateRef.current = {
+          lastDistance: distance,
+          lastCenterX: center.x,
+          lastCenterY: center.y,
+          scrollLeft: el.scrollLeft,
+          scrollTop: el.scrollTop,
+        };
+      }
+    };
+
+    const handleTouchEnd = () => {
+      touchStateRef.current = null;
+    };
+
+    el.addEventListener("touchstart", handleTouchStart, { passive: false });
+    el.addEventListener("touchmove", handleTouchMove, { passive: false });
+    el.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      el.removeEventListener("touchstart", handleTouchStart);
+      el.removeEventListener("touchmove", handleTouchMove);
+      el.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, []);
+
   return (
     <div
       ref={containerRef}
-      className="relative h-full w-full overflow-auto bg-slate-950"
+      className={cn(
+        "absolute inset-0 overflow-auto bg-slate-950",
+        isPanning ? "cursor-grabbing" : "cursor-grab"
+      )}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUpOrLeave}

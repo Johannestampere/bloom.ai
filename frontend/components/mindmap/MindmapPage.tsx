@@ -104,8 +104,8 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
             isCollaboratorsOpen={activePanel === "collaborators"}
             onToggleCollaborators={toggleCollaboratorsPanel}
         />
-        <div className="flex flex-1 min-h-0">
-            <div className="flex-1 min-h-0">
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+            <div className="relative flex-1 min-h-0 min-w-0 overflow-hidden">
             <MindmapCanvas mindmapId={mindmapId} onAddChild={handleAddChild} />
             </div>
             <div className="w-80 flex-shrink-0">
