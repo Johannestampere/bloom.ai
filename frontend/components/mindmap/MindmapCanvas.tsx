@@ -45,16 +45,24 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
     setHasCentered(true);
   }, [hasCentered, mindmapId, graph]);
 
-  const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
-    if (!event.ctrlKey && !event.metaKey) return;
-    event.preventDefault();
-    const delta = -event.deltaY;
-    const factor = delta > 0 ? 1.05 : 0.95;
-    setScale((prev) => {
-      const next = prev * factor;
-      return Math.min(3, Math.max(0.3, next));
-    });
-  };
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const handleWheel = (event: WheelEvent) => {
+      if (!event.ctrlKey && !event.metaKey) return;
+      event.preventDefault();
+      const delta = -event.deltaY;
+      const factor = delta > 0 ? 1.05 : 0.95;
+      setScale((prev) => {
+        const next = prev * factor;
+        return Math.min(3, Math.max(0.3, next));
+      });
+    };
+
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => el.removeEventListener("wheel", handleWheel);
+  }, []);
 
   const handleNodeClick = (id: number, e: MouseEvent) => {
     e.stopPropagation();
@@ -105,7 +113,6 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
     <div
       ref={containerRef}
       className="relative h-full w-full overflow-auto bg-slate-950"
-      onWheel={handleWheel}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUpOrLeave}
