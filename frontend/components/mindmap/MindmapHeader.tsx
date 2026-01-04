@@ -12,12 +12,14 @@ type MindmapHeaderProps = {
     mindmapId: number;
     isCollaboratorsOpen: boolean;
     onToggleCollaborators: () => void;
+    onLoadingChange?: (loading: boolean) => void;
 };
 
 export function MindmapHeader({
     mindmapId,
     isCollaboratorsOpen,
     onToggleCollaborators,
+    onLoadingChange,
 }: MindmapHeaderProps) {
     const currentUser = useMindmapStore((state) => state.currentUser);
     const nodesByMindmapId = useMindmapStore((state) => state.nodesByMindmapId);
@@ -52,6 +54,10 @@ export function MindmapHeader({
             mounted = false;
         };
     }, [mindmapId]);
+
+    useEffect(() => {
+        onLoadingChange?.(loading);
+    }, [loading, onLoadingChange]);
 
     useEffect(() => {
         if (isEditing && titleRef.current) {

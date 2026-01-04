@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useMindmapStore } from "@/lib/store";
 import { MindmapCanvas } from "./MindmapCanvas";
 import { NodeSidePanel } from "./NodeSidePanel";
@@ -18,10 +18,17 @@ type SidePanel = "node" | "collaborators" | "ai";
 export function MindmapPage({ mindmapId }: MindmapPageProps) {
     const createNode = useMindmapStore((state) => state.createNode);
     const setSelectedNodeId = useMindmapStore((state) => state.setSelectedNodeId);
-    const loading = useMindmapStore((state) => state.loading);
     const error = useMindmapStore((state) => state.error);
 
     const [activePanel, setActivePanel] = useState<SidePanel>("node");
+    const [nodesLoading, setNodesLoading] = useState(true);
+    const [headerLoading, setHeaderLoading] = useState(true);
+
+    const isFullyLoaded = !nodesLoading && !headerLoading;
+
+    const handleHeaderLoadingChange = useCallback((loading: boolean) => {
+        setHeaderLoading(loading);
+    }, []);
 
     useEffect(() => {
         const fetchNodes = async () => {
@@ -31,9 +38,12 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
             .fetchMindmapNodes(mindmapId);
         } catch {
             // ignore errors here; store already tracks error state
+        } finally {
+            setNodesLoading(false);
         }
         };
 
+        setNodesLoading(true);
         fetchNodes().catch(() => {});
 
         const nodesChannel = supabase
@@ -87,9 +97,15 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
             mindmapId={mindmapId}
             isCollaboratorsOpen={activePanel === "collaborators"}
             onToggleCollaborators={toggleCollaboratorsPanel}
+            onLoadingChange={handleHeaderLoadingChange}
         />
         <div className="flex flex-1 min-h-0 overflow-hidden">
             <div className="relative flex-1 min-h-0 min-w-0 overflow-hidden">
+            {!isFullyLoaded && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#EAEBD6]">
+                <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#465775] border-t-transparent" />
+                </div>
+            )}
             <MindmapCanvas mindmapId={mindmapId} onAddChild={handleAddChild} />
             </div>
             <div className="w-80 flex-shrink-0">
@@ -104,13 +120,6 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
             )}
             </div>
         </div>
-        {loading && (
-            <div className="pointer-events-none fixed inset-x-0 top-14 z-20 flex justify-center">
-            <div className="rounded-full bg-slate-900/90 px-3 py-1 text-xs text-slate-300 shadow">
-                Loading…
-            </div>
-            </div>
-        )}
         {error && (
             <div className="pointer-events-none fixed inset-x-0 bottom-4 z-20 flex justify-center">
             <div className="pointer-events-auto rounded-md bg-red-900/80 px-3 py-1 text-xs text-red-100 shadow">
