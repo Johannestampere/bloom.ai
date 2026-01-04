@@ -200,7 +200,7 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
     <div
       ref={containerRef}
       className={cn(
-        "absolute inset-0 overflow-auto bg-slate-950",
+        "absolute inset-0 overflow-auto bg-[#EAEBD6]",
         isPanning ? "cursor-grabbing" : "cursor-grab"
       )}
       onMouseDown={handleMouseDown}
@@ -267,7 +267,7 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
                 y1={start.y}
                 x2={end.x}
                 y2={end.y}
-                stroke="#334155"
+                stroke="#000000"
                 strokeWidth={1.5}
               />
             );
@@ -310,16 +310,15 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
                   onDoubleClick={(e) => handleNodeDoubleClick(node.id, e)}
                   className={cn(
                     "flex min-w-[120px] max-w-[220px] -translate-x-1/2 -translate-y-1/2 flex-col items-center rounded-full border px-4 py-2 text-xs shadow-sm transition-colors",
-                    "bg-slate-900/80 text-slate-100 border-slate-700",
-                    "hover:border-emerald-400/80 hover:text-emerald-100",
+                    "bg-white text-black border-black",
+                    "hover:bg-gray-50",
                     voteGlow,
                     node.is_ai_generated && "border-dashed",
-                    isSelected &&
-                      "border-emerald-400 bg-emerald-500/10 text-emerald-50"
+                    isSelected && "border-2 border-black bg-gray-100"
                   )}
                 >
                   <span className="truncate font-medium">{node.title}</span>
-                  <span className="mt-1 text-[10px] text-slate-400">
+                  <span className="mt-1 text-[10px] text-gray-500">
                     {node.vote_count} vote{node.vote_count === 1 ? "" : "s"}
                   </span>
                 </button>

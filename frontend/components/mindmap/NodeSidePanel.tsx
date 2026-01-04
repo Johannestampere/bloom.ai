@@ -106,18 +106,18 @@ export function NodeSidePanel({
 
   if (!selectedNode) {
     return (
-      <div className="h-full border-l border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-400">
+      <div className="h-full border-l border-[#3a4a5e] bg-[#465775] p-4 text-sm text-slate-200">
         Select a node to edit its details.
       </div>
     );
   }
 
   return (
-    <div className="h-full border-l border-slate-800 bg-slate-900/60 p-4">
-      <Panel title="Node details" className="flex h-full flex-col bg-slate-900/80">
+    <div className="h-full border-l border-[#3a4a5e] bg-[#465775] p-4">
+      <Panel title="Node details" className="flex h-full flex-col bg-[#3a4a5e]">
         <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
           <div className="space-y-1">
-            <label className="block text-xs font-medium text-slate-300">
+            <label className="block text-xs font-medium text-slate-200">
               Title
             </label>
             <Input
@@ -130,11 +130,11 @@ export function NodeSidePanel({
           </div>
 
           <div className="space-y-1">
-            <label className="block text-xs font-medium text-slate-300">
+            <label className="block text-xs font-medium text-slate-200">
               Content
             </label>
             <textarea
-              className="min-h-[120px] w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-100 outline-none focus:border-emerald-400 focus:ring-0"
+              className="min-h-[120px] w-full rounded-md border border-[#2a3a4e] bg-white px-3 py-2 text-xs text-black outline-none focus:border-black focus:ring-0"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               onBlur={handleSave}
@@ -154,9 +154,9 @@ export function NodeSidePanel({
             </Button>
           </div>
 
-          <div className="mt-2 space-y-1 border-t border-slate-800 pt-3">
+          <div className="mt-2 space-y-1 border-t border-[#2a3a4e] pt-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-300">Votes</span>
+              <span className="text-xs font-medium text-slate-200">Votes</span>
               <Button
                 type="button"
                 variant="secondary"
@@ -191,7 +191,7 @@ export function NodeSidePanel({
           </div>
 
         </div>
-        <div className="mt-3 border-t border-slate-800 pt-3">
+        <div className="mt-3 border-t border-[#2a3a4e] pt-3">
           <Button
             type="button"
             variant="secondary"

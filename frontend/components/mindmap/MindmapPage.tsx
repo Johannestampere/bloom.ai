@@ -52,24 +52,8 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
         )
         .subscribe();
 
-        const votesChannel = supabase
-        .channel(`mindmap-${mindmapId}-votes`)
-        .on(
-            "postgres_changes",
-            {
-            event: "*",
-            schema: "public",
-            table: "votes",
-            },
-            () => {
-            fetchNodes().catch(() => {});
-            }
-        )
-        .subscribe();
-
         return () => {
         supabase.removeChannel(nodesChannel);
-        supabase.removeChannel(votesChannel);
         };
     }, [mindmapId]);
 

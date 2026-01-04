@@ -58,10 +58,10 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex h-full w-full flex-col bg-slate-950 text-slate-50">
-      <div className="border-b border-slate-800 px-6 py-4 flex items-center justify-between">
+    <div className="flex h-full w-full flex-col bg-[#EAEBD6] text-black">
+      <div className="border-b border-[#3a4a5e] bg-[#465775] px-6 py-4 flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight">Your mindmaps</h1>
+          <h1 className="text-lg font-semibold tracking-tight text-white">Your mindmaps</h1>
         </div>
         <form onSubmit={handleCreate} className="flex items-center gap-2">
           <Input
@@ -77,10 +77,10 @@ export default function DashboardPage() {
       </div>
 
       {loading && (
-        <div className="px-6 py-2 text-xs text-slate-400">Loading…</div>
+        <div className="px-6 py-2 text-xs text-gray-600">Loading…</div>
       )}
       {error && (
-        <div className="px-6 py-2 text-xs text-red-300">{error}</div>
+        <div className="px-6 py-2 text-xs text-red-600">{error}</div>
       )}
 
       <div className="flex-1 overflow-auto">
@@ -88,20 +88,20 @@ export default function DashboardPage() {
           {mindmaps.map((m) => (
             <div
               key={m.id}
-              className="group flex w-full cursor-pointer items-center justify-between border-b border-slate-900 px-6 py-3 hover:bg-slate-900/60"
+              className="group flex w-full cursor-pointer items-center justify-between border-b border-[#d4d5c0] bg-white px-6 py-3 hover:bg-gray-50"
               onClick={() => router.push(`/mindmaps/${m.id}`)}
             >
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-slate-100">
+                <span className="text-sm font-medium text-black">
                   {m.title}
                 </span>
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-gray-500">
                   {m.node_count} node{m.node_count === 1 ? "" : "s"} ·{" "}
                   {m.total_collaborators} collaborator
                   {m.total_collaborators === 1 ? "" : "s"}
                 </span>
               </div>
-              <div className="flex items-center gap-4 text-xs text-slate-400">
+              <div className="flex items-center gap-4 text-xs text-gray-500">
                 <span className="hidden sm:inline">
                   Created {new Date(m.created_at).toLocaleDateString()}
                 </span>
@@ -121,7 +121,7 @@ export default function DashboardPage() {
           ))}
 
           {mindmaps.length === 0 && !loading && hasLoadedOnce && (
-            <div className="px-6 py-8 text-sm text-slate-400">
+            <div className="px-6 py-8 text-sm text-gray-500">
               No mindmaps yet. Use the form above to create your first mindmap.
             </div>
           )}

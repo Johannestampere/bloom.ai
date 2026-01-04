@@ -129,7 +129,7 @@ export function MindmapHeader({
     };
 
     return (
-        <div className="border-b border-slate-800 bg-slate-900/70 px-6 py-3">
+        <div className="border-b border-[#3a4a5e] bg-[#465775] px-6 py-3">
             <div className="flex w-full items-center justify-between gap-4">
                 {/* Left: stats */}
                 <div className="flex w-48 flex-col text-xs text-slate-400">
