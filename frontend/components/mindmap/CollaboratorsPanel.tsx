@@ -62,11 +62,11 @@ export function CollaboratorsPanel({ mindmapId }: CollaboratorsPanelProps) {
     };
 
     return (
-        <div className="h-full border-l border-slate-800 bg-slate-900/60 p-4">
-        <Panel title="Collaborators" className="h-full bg-slate-900/80">
+        <div className="h-full border-l border-[#3a4a5e] bg-[#465775] p-4">
+        <Panel title="Collaborators" className="h-full bg-[#3a4a5e]">
             <form onSubmit={handleInvite} className="mb-4 flex flex-col gap-2">
             <div className="space-y-1">
-                <label className="block text-xs font-medium text-slate-300">
+                <label className="block text-xs font-medium text-slate-200">
                 Invite collaborator by email
                 </label>
                 <Input
@@ -78,11 +78,11 @@ export function CollaboratorsPanel({ mindmapId }: CollaboratorsPanelProps) {
                 />
             </div>
             <div className="space-y-1">
-                <label className="block text-xs font-medium text-slate-300">
+                <label className="block text-xs font-medium text-slate-200">
                     Role
                 </label>
                 <select
-                    className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-1 text-xs text-slate-100 outline-none focus:border-emerald-400"
+                    className="w-full rounded-md border border-[#2a3a4e] bg-white px-3 py-1 text-xs text-black outline-none focus:border-black"
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
                     disabled={inviting}
@@ -103,14 +103,14 @@ export function CollaboratorsPanel({ mindmapId }: CollaboratorsPanelProps) {
             </form>
 
             {loading && (
-            <div className="text-xs text-slate-400">Loading collaborators…</div>
+            <div className="text-xs text-slate-300">Loading collaborators…</div>
             )}
             {error && (
             <div className="mb-2 text-xs text-red-300">{error}</div>
             )}
 
             {!loading && collaborators.length === 0 && (
-            <div className="text-xs text-slate-400">
+            <div className="text-xs text-slate-300">
                 No collaborators yet. Invite someone using the form above.
             </div>
             )}
@@ -120,13 +120,13 @@ export function CollaboratorsPanel({ mindmapId }: CollaboratorsPanelProps) {
                 {collaborators.map((c) => (
                 <div
                     key={c.id}
-                    className="flex items-center justify-between rounded-md border border-slate-800 bg-slate-900/80 px-3 py-2"
+                    className="flex items-center justify-between rounded-md border border-[#2a3a4e] bg-white px-3 py-2"
                 >
                     <div className="flex flex-col">
-                    <span className="font-medium text-slate-100">
+                    <span className="font-medium text-black">
                         {c.user_email || c.user_name || c.user_id}
                     </span>
-                    <span className="text-[11px] text-slate-400">
+                    <span className="text-[11px] text-gray-500">
                         {c.role} · {c.status}
                     </span>
                     </div>

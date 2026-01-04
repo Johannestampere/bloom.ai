@@ -56,7 +56,7 @@ export function AISuggestionsPanel({
 
     if (!selectedNode) {
         return (
-            <div className="h-full border-l border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-400">
+            <div className="h-full border-l border-[#3a4a5e] bg-[#465775] p-4 text-sm text-slate-200">
                 Select a node to generate AI ideas.
             </div>
         );
@@ -94,13 +94,13 @@ export function AISuggestionsPanel({
     const anySelected = suggestions.some((s) => s.selected);
 
     return (
-        <div className="h-full border-l border-slate-800 bg-slate-900/60 p-4">
-        <Panel title="AI Suggestions" className="flex h-full flex-col bg-slate-900/80">
-            <div className="mb-3 flex items-center justify-between text-xs text-slate-400">
+        <div className="h-full border-l border-[#3a4a5e] bg-[#465775] p-4">
+        <Panel title="AI Suggestions" className="flex h-full flex-col bg-[#3a4a5e]">
+            <div className="mb-3 flex items-center justify-between text-xs text-slate-300">
             <div>
                 <div>Based on your idea:</div>
-                <div className="truncate text-slate-100">
-                “{selectedNode.title || "Untitled node"}”
+                <div className="truncate text-white">
+                "{selectedNode.title || "Untitled node"}"
                 </div>
             </div>
             <Button
@@ -114,7 +114,7 @@ export function AISuggestionsPanel({
             </div>
 
             {loading && (
-            <div className="text-xs text-slate-400">Generating ideas…</div>
+            <div className="text-xs text-slate-300">Generating ideas…</div>
             )}
             {error && (
             <div className="mb-2 text-xs text-red-300">
@@ -130,7 +130,7 @@ export function AISuggestionsPanel({
             )}
 
             {!loading && !error && suggestions.length === 0 && (
-                <div className="text-xs text-slate-400">
+                <div className="text-xs text-slate-300">
                     No ideas generated. Try again or adjust your node content.
                 </div>
             )}
@@ -143,18 +143,18 @@ export function AISuggestionsPanel({
                 {suggestions.map((s) => (
                     <label
                         key={s.id}
-                        className="flex cursor-pointer items-start gap-2 rounded-md border border-slate-800 bg-slate-900/80 px-3 py-2 hover:border-emerald-400/60"
+                        className="flex cursor-pointer items-start gap-2 rounded-md border border-[#2a3a4e] bg-white px-3 py-2 hover:bg-gray-50"
                     >
                         <input
                             type="checkbox"
-                            className="mt-1 h-3 w-3 rounded border-slate-500 bg-slate-900 text-emerald-500 focus:ring-0"
+                            className="mt-1 h-3 w-3 rounded border-gray-400 bg-white text-black focus:ring-0"
                             checked={s.selected}
                             onChange={() => toggleSelection(s.id)}
                         />
                         <div>
-                        <div className="font-medium text-slate-100">{s.title}</div>
+                        <div className="font-medium text-black">{s.title}</div>
                             {s.content && (
-                                <div className="mt-1 text-[11px] text-slate-400">
+                                <div className="mt-1 text-[11px] text-gray-500">
                                 {s.content}
                                 </div>
                             )}
@@ -163,7 +163,7 @@ export function AISuggestionsPanel({
                 ))}
             </div>
 
-            <div className="mt-3 flex justify-between border-t border-slate-800 pt-3 text-xs">
+            <div className="mt-3 flex justify-between border-t border-[#2a3a4e] pt-3 text-xs">
                 <Button
                     type="button"
                     variant="secondary"

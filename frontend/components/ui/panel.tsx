@@ -11,7 +11,7 @@ export function Panel({ title, children, className }: PanelProps) {
   return (
     <section className={cn("card", className)}>
       {title && (
-        <header className="mb-2 text-sm font-medium text-slate-700">
+        <header className="mb-2 text-sm font-medium text-white">
           {title}
         </header>
       )}
