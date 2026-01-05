@@ -76,14 +76,16 @@ export default function DashboardPage() {
         </form>
       </div>
 
-      {loading && (
-        <div className="px-6 py-2 text-xs text-gray-600">Loading…</div>
-      )}
       {error && (
         <div className="px-6 py-2 text-xs text-red-600">{error}</div>
       )}
 
-      <div className="flex-1 overflow-auto">
+      <div className="relative flex-1 overflow-auto">
+        {loading && !hasLoadedOnce && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#EAEBD6]">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#465775] border-t-transparent" />
+          </div>
+        )}
         <div className="min-w-full">
           {mindmaps.map((m) => (
             <div

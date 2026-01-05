@@ -121,68 +121,159 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
     const existing = state.nodesByMindmapId[mindmapId] ?? [];
     const parent = existing.find((n) => n.id === parent_id) ?? null;
 
-    let x_position = 0;
-    let y_position = 0;
     let order_index = existing.filter((n) => n.parent_id === parent_id).length;
 
-    if (parent) {
-      // Compute depth of parent from the root (parent_id === null)
-      let depth = 0;
-      let current: NodeResponse | undefined = parent;
-      const MAX_DEPTH = 32;
-      while (current && current.parent_id !== null && depth < MAX_DEPTH) {
-        const next = existing.find(
-          (n) => n.id === current!.parent_id!
-        ) as NodeResponse | undefined;
-        if (!next) break;
-        depth += 1;
-        current = next;
-      }
-
+    const computeFullLayout = (): Record<number, [number, number]> => {
       // Mirror backend layout constants from backend/app/utils/layout.py
       const BASE_RADIUS = 250;
       const RADIUS_INCREMENT = 180;
-      const radius = BASE_RADIUS + depth * RADIUS_INCREMENT;
+      const MIN_NODE_SPACING = 80;
 
-      // Get siblings (nodes with same parent)
-      const siblings = existing.filter((n) => n.parent_id === parent_id);
-      const siblingCount = siblings.length + 1; // +1 for the new node
+      const virtualNewNode: NodeResponse = {
+        id: tempId,
+        mindmap_id: mindmapId,
+        parent_id,
+        title: title ?? "",
+        content: content ?? "",
+        x_position: 0,
+        y_position: 0,
+        order_index,
+        is_ai_generated: false,
+        vote_count: 0,
+        user_votes: [],
+        created_at: new Date().toISOString(),
+      };
 
-      let parentAngle = 0;
-      if (parent.parent_id !== null) {
-        const grandparent = existing.find(
-          (n) => n.id === parent.parent_id
-        ) as NodeResponse | undefined;
-        if (grandparent) {
-          const dx = parent.x_position - grandparent.x_position;
-          const dy = parent.y_position - grandparent.y_position;
-          parentAngle = Math.atan2(dy, dx);
+      const allNodes = [...existing, virtualNewNode];
+
+      const nodesById: Record<number, NodeResponse> = {};
+      const childrenMap: Record<number, NodeResponse[]> = {};
+
+      for (const node of allNodes) {
+        nodesById[node.id] = node;
+        childrenMap[node.id] = [];
+      }
+
+      for (const node of allNodes) {
+        if (node.parent_id !== null && childrenMap[node.parent_id]) {
+          childrenMap[node.parent_id].push(node);
         }
       }
 
-      // For root's children, use full circle; otherwise spread within parent's cone
-      let availableStart: number;
-      let availableEnd: number;
-
-      if (parent.parent_id === null) {
-        // Parent is root - children spread around full circle
-        availableStart = 0;
-        availableEnd = 2 * Math.PI;
-      } else {
-        // Spread children within a cone (max 180 degrees)
-        const spread = Math.PI; // 180 degrees max
-        availableStart = parentAngle - spread / 2;
-        availableEnd = parentAngle + spread / 2;
+      for (const parentId of Object.keys(childrenMap)) {
+        childrenMap[Number(parentId)].sort((a, b) => a.order_index - b.order_index);
       }
 
-      // Place new node evenly among siblings
-      const availableRange = availableEnd - availableStart;
-      const angleStep = availableRange / siblingCount;
-      const childAngle = availableStart + angleStep * (order_index + 0.5);
+      const root = allNodes.find((n) => n.parent_id === null);
+      if (!root) {
+        if (parent) {
+          return { [tempId]: [parent.x_position + BASE_RADIUS, parent.y_position] };
+        }
+        return { [tempId]: [0, 0] };
+      }
 
-      x_position = parent.x_position + radius * Math.cos(childAngle);
-      y_position = parent.y_position + radius * Math.sin(childAngle);
-    }
+      const depthMap: Record<number, number> = { [root.id]: 0 };
+      const queue: NodeResponse[] = [root];
+
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        const currentDepth = depthMap[current.id];
+
+        for (const child of childrenMap[current.id] || []) {
+          depthMap[child.id] = currentDepth + 1;
+          queue.push(child);
+        }
+      }
+
+      const subtreeSizes: Record<number, number> = {};
+
+      const computeSubtreeSize = (nodeId: number): number => {
+        let size = 1;
+        for (const child of childrenMap[nodeId] || []) {
+          size += computeSubtreeSize(child.id);
+        }
+        subtreeSizes[nodeId] = size;
+        return size;
+      };
+
+      computeSubtreeSize(root.id);
+
+      const wedges: Record<number, [number, number]> = {};
+      const positions: Record<number, [number, number]> = {};
+
+      positions[root.id] = [0, 0];
+      wedges[root.id] = [0, 2 * Math.PI];
+
+      const layoutQueue: NodeResponse[] = [root];
+
+      while (layoutQueue.length > 0) {
+        const parentNode = layoutQueue.shift()!;
+        const [parentX, parentY] = positions[parentNode.id];
+        const [parentStart, parentEnd] = wedges[parentNode.id];
+        const childList = childrenMap[parentNode.id] || [];
+
+        if (childList.length === 0) continue;
+
+        const parentDepth = depthMap[parentNode.id];
+        const radius = BASE_RADIUS + parentDepth * RADIUS_INCREMENT;
+
+        let availableStart: number;
+        let availableEnd: number;
+
+        if (parentDepth === 0) {
+          availableStart = 0;
+          availableEnd = 2 * Math.PI;
+        } else {
+          const parentAngle = (parentStart + parentEnd) / 2;
+          const spread = Math.min(parentEnd - parentStart, Math.PI);
+          availableStart = parentAngle - spread / 2;
+          availableEnd = parentAngle + spread / 2;
+        }
+
+        let availableRange = availableEnd - availableStart;
+
+        const totalWeight = childList.reduce((sum, child) => sum + (subtreeSizes[child.id] || 1), 0);
+
+        const minAnglePerChild = radius > 0 ? MIN_NODE_SPACING / radius : 0.1;
+        const minTotalAngle = minAnglePerChild * childList.length;
+
+        if (minTotalAngle > availableRange) {
+          const extra = (minTotalAngle - availableRange) / 2;
+          availableStart -= extra;
+          availableEnd += extra;
+          availableRange = availableEnd - availableStart;
+        }
+
+        let currentAngle = availableStart;
+
+        for (const child of childList) {
+          const childWeight = subtreeSizes[child.id] || 1;
+
+          let childRange = (childWeight / totalWeight) * availableRange;
+
+          childRange = Math.max(childRange, minAnglePerChild);
+
+          const childStart = currentAngle;
+          const childEnd = currentAngle + childRange;
+          const childAngle = (childStart + childEnd) / 2;
+
+          const childX = parentX + radius * Math.cos(childAngle);
+          const childY = parentY + radius * Math.sin(childAngle);
+
+          positions[child.id] = [childX, childY];
+          wedges[child.id] = [childStart, childEnd];
+
+          currentAngle = childEnd;
+          layoutQueue.push(child);
+        }
+      }
+
+      return positions;
+    };
+
+    const positions = computeFullLayout();
+
+    const [x_position, y_position] = positions[tempId] ?? [0, 0];
 
     const optimisticNode: NodeResponse = {
       id: tempId,
@@ -199,11 +290,23 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
       created_at: new Date().toISOString(),
     };
 
-    // Insert optimistic node immediately
+    // Update ALL existing nodes with their new computed positions + add the new node
+    const updatedNodes = existing.map((node) => {
+      const newPos = positions[node.id];
+      if (newPos) {
+        return {
+          ...node,
+          x_position: newPos[0],
+          y_position: newPos[1],
+        };
+      }
+      return node;
+    });
+
     set({
       nodesByMindmapId: {
         ...state.nodesByMindmapId,
-        [mindmapId]: [...existing, optimisticNode],
+        [mindmapId]: [...updatedNodes, optimisticNode],
       },
     });
 

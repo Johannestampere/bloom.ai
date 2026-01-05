@@ -300,7 +300,7 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
           return (
             <div
               key={node.id}
-              className="absolute"
+              className="absolute transition-all duration-300 ease-out"
               style={{ left, top }}
             >
               <Tooltip label={label}>
