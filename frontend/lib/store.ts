@@ -111,6 +111,9 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
     }
   },
 
+  // 1) UI shows new node immediately
+  // 2) Compute a full layout locally
+  // 3) Replace the fake node with the real backend node when req returns
   async createNode(input) {
     const { mindmapId, parent_id, title, content } = input;
     set({ error: null });
@@ -121,6 +124,7 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
     const existing = state.nodesByMindmapId[mindmapId] ?? [];
     const parent = existing.find((n) => n.id === parent_id) ?? null;
 
+    // Determine which child the new node is gonna be
     let order_index = existing.filter((n) => n.parent_id === parent_id).length;
 
     const computeFullLayout = (): Record<number, [number, number]> => {
@@ -362,20 +366,63 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
 
   async updateNode(id, payload) {
     set({ error: null });
+
+    const state = get();
+    let mindmapId: number | null = null;
+    let originalNode: NodeResponse | null = null;
+
+    for (const [mId, nodes] of Object.entries(state.nodesByMindmapId)) {
+      const found = nodes.find((n) => n.id === id);
+      if (found) {
+        mindmapId = Number(mId);
+        originalNode = found;
+        break;
+      }
+    }
+
+    if (mindmapId !== null) {
+      set((s) => {
+        const existing = s.nodesByMindmapId[mindmapId!] ?? [];
+        const next = existing.map((n) =>
+          n.id === id ? { ...n, ...payload } : n
+        );
+        return {
+          nodesByMindmapId: {
+            ...s.nodesByMindmapId,
+            [mindmapId!]: next,
+          },
+        };
+      });
+    }
+
     try {
       const updated = await api.updateNode(id, payload);
-      set((state) => {
-        const mindmapId = updated.mindmap_id;
-        const existing = state.nodesByMindmapId[mindmapId] ?? [];
+      set((s) => {
+        const existing = s.nodesByMindmapId[updated.mindmap_id] ?? [];
         const next = existing.map((n) => (n.id === id ? updated : n));
         return {
           nodesByMindmapId: {
-            ...state.nodesByMindmapId,
-            [mindmapId]: next,
+            ...s.nodesByMindmapId,
+            [updated.mindmap_id]: next,
           },
         };
       });
     } catch (err: any) {
+      // Roll back to original on failure
+      if (mindmapId !== null && originalNode !== null) {
+        set((s) => {
+          const existing = s.nodesByMindmapId[mindmapId!] ?? [];
+          const next = existing.map((n) =>
+            n.id === id ? originalNode! : n
+          );
+          return {
+            nodesByMindmapId: {
+              ...s.nodesByMindmapId,
+              [mindmapId!]: next,
+            },
+          };
+        });
+      }
       set({ error: err.message ?? "Failed to update node" });
     }
   },
