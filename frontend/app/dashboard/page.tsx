@@ -54,76 +54,76 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex h-full w-full flex-col bg-[#EAEBD6] text-black">
-      <div className="border-b border-[#3a4a5e] bg-[#465775] px-6 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight text-white">Your mindmaps</h1>
-        </div>
-        <form onSubmit={handleCreate} className="flex items-center gap-2">
+    <div className="flex h-full w-full flex-col bg-neutral-50">
+      <div className="px-8 pt-10 pb-8">
+        <h1 className="text-2xl font-medium text-neutral-900 mb-6">Mindmaps</h1>
+        <form onSubmit={handleCreate} className="flex items-center gap-3 max-w-md">
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="New mindmap title"
-            className="w-56"
+            placeholder="New mindmap..."
+            className="flex-1 h-10 bg-white border-neutral-200 focus:border-neutral-400 focus:ring-0"
           />
-          <Button type="submit" disabled={!title.trim()}>
+          <Button
+            type="submit"
+            disabled={!title.trim()}
+            className="hover:cursor-pointer h-10 px-5 bg-neutral-900 hover:bg-neutral-600 text-white"
+          >
             Create
           </Button>
         </form>
       </div>
 
       {error && (
-        <div className="px-6 py-2 text-xs text-red-600">{error}</div>
+        <div className="px-8 py-2 text-sm text-red-600">{error}</div>
       )}
 
-      <div className="relative flex-1 overflow-auto">
+      <div className="relative flex-1 overflow-auto px-8 pb-8">
         {loading && !hasLoadedOnce && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#EAEBD6]">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#465775] border-t-transparent" />
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-neutral-50">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900" />
           </div>
         )}
-        <div className="min-w-full">
+
+        <div className="grid gap-3">
           {mindmaps.map((m) => (
             <div
               key={m.id}
-              className="group flex w-full cursor-pointer items-center justify-between border-b border-[#d4d5c0] bg-white px-6 py-3 hover:bg-gray-50"
+              className="group flex items-center justify-between p-4 bg-white rounded-lg border border-neutral-200 hover:border-neutral-300 cursor-pointer transition-colors"
               onClick={() => router.push(`/mindmaps/${m.id}`)}
             >
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-black">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-sm font-medium text-neutral-900">
                   {m.title}
                 </span>
-                <span className="text-xs text-gray-500">
-                  {m.node_count} node{m.node_count === 1 ? "" : "s"} ·{" "}
-                  {m.total_collaborators} collaborator
-                  {m.total_collaborators === 1 ? "" : "s"}
+                <span className="text-xs text-neutral-500">
+                  {m.node_count} node{m.node_count === 1 ? "" : "s"} · {m.total_collaborators} collaborator{m.total_collaborators === 1 ? "" : "s"}
                 </span>
               </div>
-              <div className="flex items-center gap-4 text-xs text-gray-500">
-                <span className="hidden sm:inline">
-                  Created {new Date(m.created_at).toLocaleDateString()}
+              <div className="flex items-center gap-4">
+                <span className="text-xs text-neutral-400 hidden sm:inline">
+                  {new Date(m.created_at).toLocaleDateString()}
                 </span>
-                <Button
+                <button
                   type="button"
-                  variant="secondary"
-                  className="text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="hover:cursor-pointer text-xs text-neutral-400 hover:text-red-800 hover:text-[14px] opacity-0 group-hover:opacity-100 transition-all"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDelete(m.id, m.title);
                   }}
                 >
                   Delete
-                </Button>
+                </button>
               </div>
             </div>
           ))}
-
-          {mindmaps.length === 0 && !loading && hasLoadedOnce && (
-            <div className="px-6 py-8 text-sm text-gray-500">
-              No mindmaps yet. Use the form above to create your first mindmap.
-            </div>
-          )}
         </div>
+
+        {mindmaps.length === 0 && !loading && hasLoadedOnce && (
+          <div className="text-sm text-neutral-500 mt-4">
+            No mindmaps yet. Create your first one above.
+          </div>
+        )}
       </div>
     </div>
   );
