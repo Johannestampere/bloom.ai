@@ -29,9 +29,9 @@ export function AuthButtons() {
       <button
         type="button"
         onClick={handleSignIn}
-        className="text-xs font-medium text-emerald-300 hover:text-emerald-200"
+        className="text-xs font-medium text-neutral-900 hover:text-neutral-600 transition-colors"
       >
-        Sign in with Google
+        Sign in
       </button>
     );
   }
@@ -40,7 +40,7 @@ export function AuthButtons() {
     <button
       type="button"
       onClick={handleSignOut}
-      className="text-[11px] text-slate-400 hover:text-slate-200"
+      className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
     >
       Sign out
     </button>

@@ -200,7 +200,7 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
     <div
       ref={containerRef}
       className={cn(
-        "absolute inset-0 overflow-auto bg-[#EAEBD6]",
+        "absolute inset-0 overflow-auto bg-neutral-50",
         isPanning ? "cursor-grabbing" : "cursor-grab"
       )}
       onMouseDown={handleMouseDown}
@@ -267,8 +267,8 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
                 y1={start.y}
                 x2={end.x}
                 y2={end.y}
-                stroke="#000000"
-                strokeWidth={1.5}
+                stroke="#d4d4d4"
+                strokeWidth={1}
               />
             );
           })}
@@ -278,6 +278,7 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
           const left = CANVAS_CENTER + node.x;
           const top = CANVAS_CENTER + node.y;
           const isSelected = node.id === selectedNodeId;
+          const isRoot = node.parent_id === null;
 
           const label = [
             node.title,
@@ -285,16 +286,13 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
             `\nVotes: ${node.vote_count}`,
           ].join("");
 
-          let voteGlow = "";
+          let voteIndicator = "";
           if (node.vote_count >= 3) {
-            voteGlow =
-              "shadow-[0_0_35px_rgba(16,185,129,0.8)] border-emerald-400/90";
+            voteIndicator = "ring-2 ring-emerald-400/50";
           } else if (node.vote_count >= 2) {
-            voteGlow =
-              "shadow-[0_0_22px_rgba(16,185,129,0.6)] border-emerald-300/80";
+            voteIndicator = "ring-1 ring-emerald-400/40";
           } else if (node.vote_count > 0) {
-            voteGlow =
-              "shadow-[0_0_12px_rgba(16,185,129,0.4)] border-emerald-300/60";
+            voteIndicator = "ring-1 ring-emerald-400/30";
           }
 
           return (
@@ -309,18 +307,26 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
                   onClick={(e) => handleNodeClick(node.id, e)}
                   onDoubleClick={(e) => handleNodeDoubleClick(node.id, e)}
                   className={cn(
-                    "flex min-w-[120px] max-w-[220px] -translate-x-1/2 -translate-y-1/2 flex-col items-center rounded-full border px-4 py-2 text-xs shadow-sm transition-colors",
-                    "bg-white text-black border-black",
-                    "hover:bg-gray-50",
-                    voteGlow,
-                    node.is_ai_generated && "border-dashed",
-                    isSelected && "border-2 border-black bg-gray-100"
+                    "-translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center rounded-full border transition-all",
+                    "bg-white text-neutral-900 border-neutral-200",
+                    "hover:border-neutral-300 hover:shadow-sm",
+                    voteIndicator,
+                    node.is_ai_generated && "border-dashed border-neutral-300",
+                    isSelected && "border-neutral-900 shadow-md",
+                    isRoot
+                      ? "min-w-[160px] max-w-[260px] px-6 py-4 text-sm font-medium"
+                      : "min-w-[100px] max-w-[180px] px-4 py-2 text-xs"
                   )}
                 >
-                  <span className="truncate font-medium">{node.title}</span>
-                  <span className="mt-1 text-[10px] text-gray-500">
-                    {node.vote_count} vote{node.vote_count === 1 ? "" : "s"}
-                  </span>
+                  <span className="truncate">{node.title}</span>
+                  {node.vote_count > 0 && (
+                    <span className={cn(
+                      "mt-1 text-neutral-400",
+                      isRoot ? "text-xs" : "text-[10px]"
+                    )}>
+                      {node.vote_count} vote{node.vote_count === 1 ? "" : "s"}
+                    </span>
+                  )}
                 </button>
               </Tooltip>
             </div>

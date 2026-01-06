@@ -6,13 +6,14 @@ import { api } from "@/lib/api";
 import type { MindMapDetail } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 type MindmapHeaderProps = {
     mindmapId: number;
     isCollaboratorsOpen: boolean;
     onToggleCollaborators: () => void;
     onLoadingChange?: (loading: boolean) => void;
+    isHidden?: boolean;
+    onToggleHidden?: () => void;
 };
 
 export function MindmapHeader({
@@ -20,6 +21,8 @@ export function MindmapHeader({
     isCollaboratorsOpen,
     onToggleCollaborators,
     onLoadingChange,
+    isHidden,
+    onToggleHidden,
 }: MindmapHeaderProps) {
     const currentUser = useMindmapStore((state) => state.currentUser);
     const nodesByMindmapId = useMindmapStore((state) => state.nodesByMindmapId);
@@ -135,16 +138,26 @@ export function MindmapHeader({
     };
 
     return (
-        <div className="border-b border-[#3a4a5e] bg-[#465775] px-6 py-3">
+        <div className="border-b border-neutral-200 bg-white px-6 py-3">
             <div className="flex w-full items-center justify-between gap-4">
-                {/* Left: stats */}
-                <div className="flex w-48 flex-col text-xs text-slate-400">
+                {/* Left: stats + hide button */}
+                <div className="flex w-48 items-center gap-3 text-xs text-neutral-500">
+                    {onToggleHidden && (
+                        <button
+                            type="button"
+                            onClick={onToggleHidden}
+                            className="text-neutral-400 hover:text-neutral-900 transition-colors"
+                            title="Hide header"
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="18 15 12 9 6 15" />
+                            </svg>
+                        </button>
+                    )}
                     {loading && <span>Loading…</span>}
                     {!loading && (
                         <span>
-                            {nodeCount} node{nodeCount === 1 ? "" : "s"} ·{" "}
-                            {collaboratorCount} collaborator
-                            {collaboratorCount === 1 ? "" : "s"}
+                            {nodeCount} node{nodeCount === 1 ? "" : "s"} · {collaboratorCount} collaborator{collaboratorCount === 1 ? "" : "s"}
                         </span>
                     )}
                 </div>
@@ -159,7 +172,7 @@ export function MindmapHeader({
                             onKeyDown={handleTitleKeyDown}
                             disabled={saving}
                             className={cn(
-                                "mx-auto w-full max-w-md border-none bg-transparent text-center text-base font-semibold tracking-tight text-slate-50 focus-visible:ring-0 focus-visible:border-0"
+                                "mx-auto w-full max-w-md border-none bg-transparent text-center text-base font-medium tracking-tight text-neutral-900 focus-visible:ring-0 focus-visible:border-0"
                             )}
                         />
                     ) : (
@@ -167,10 +180,10 @@ export function MindmapHeader({
                             type="button"
                             onClick={startEditing}
                             className={cn(
-                                "mx-auto block max-w-md truncate text-center text-base font-semibold tracking-tight",
+                                "mx-auto block max-w-md truncate text-center text-base font-medium tracking-tight",
                                 canEditTitle
-                                    ? "text-slate-50 hover:text-emerald-300"
-                                    : "text-slate-200 cursor-default"
+                                    ? "text-neutral-900 hover:text-neutral-600"
+                                    : "text-neutral-700 cursor-default"
                             )}
                         >
                             {mindmap ? mindmap.title : loading ? "Loading…" : "Mindmap"}
@@ -179,23 +192,24 @@ export function MindmapHeader({
                 </div>
 
                 {/* Right: collaborators */}
-                <div className="flex w-48 flex-col items-end text-xs text-slate-400">
-                    <div className="flex items-center gap-2">
+                <div className="flex w-48 flex-col items-end text-xs text-neutral-500">
+                    <div className="flex items-center gap-3">
                         {roleLabel && <span>{roleLabel}</span>}
-                        <Button
+                        <button
                             type="button"
-                            variant="secondary"
                             className={cn(
-                                "h-7 px-3 text-[11px]",
-                                isCollaboratorsOpen && "border-emerald-400 text-emerald-200"
+                                "text-xs transition-colors",
+                                isCollaboratorsOpen
+                                    ? "text-neutral-900 font-medium"
+                                    : "text-neutral-500 hover:text-neutral-900"
                             )}
                             onClick={onToggleCollaborators}
                         >
                             Collaborators
-                        </Button>
+                        </button>
                     </div>
                     {error && (
-                        <span className="mt-1 max-w-xs text-right text-[10px] text-red-300">
+                        <span className="mt-1 max-w-xs text-right text-[10px] text-red-500">
                             {error}
                         </span>
                     )}

@@ -9,9 +9,9 @@ type PanelProps = {
 
 export function Panel({ title, children, className }: PanelProps) {
   return (
-    <section className={cn("card", className)}>
+    <section className={cn("rounded-lg p-4", className)}>
       {title && (
-        <header className="mb-2 text-sm font-medium text-white">
+        <header className="mb-3 text-xs font-medium uppercase tracking-wide text-neutral-500">
           {title}
         </header>
       )}

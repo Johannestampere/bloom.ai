@@ -8,6 +8,7 @@ import { MindmapHeader } from "./MindmapHeader";
 import { CollaboratorsPanel } from "./CollaboratorsPanel";
 import { AISuggestionsPanel } from "./AISuggestionsPanel";
 import { supabase } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
 
 type MindmapPageProps = {
     mindmapId: number;
@@ -23,6 +24,7 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
     const [activePanel, setActivePanel] = useState<SidePanel>("node");
     const [nodesLoading, setNodesLoading] = useState(true);
     const [headerLoading, setHeaderLoading] = useState(true);
+    const [headerHidden, setHeaderHidden] = useState(false);
 
     const isFullyLoaded = !nodesLoading && !headerLoading;
 
@@ -93,17 +95,42 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
 
     return (
         <div className="flex h-full w-full flex-col min-h-0">
-        <MindmapHeader
-            mindmapId={mindmapId}
-            isCollaboratorsOpen={activePanel === "collaborators"}
-            onToggleCollaborators={toggleCollaboratorsPanel}
-            onLoadingChange={handleHeaderLoadingChange}
-        />
+        {/* Header with slide animation */}
+        <div
+            className={cn(
+                "transition-all duration-300 ease-in-out overflow-hidden",
+                headerHidden ? "max-h-0" : "max-h-20"
+            )}
+        >
+            <MindmapHeader
+                mindmapId={mindmapId}
+                isCollaboratorsOpen={activePanel === "collaborators"}
+                onToggleCollaborators={toggleCollaboratorsPanel}
+                onLoadingChange={handleHeaderLoadingChange}
+                isHidden={headerHidden}
+                onToggleHidden={() => setHeaderHidden(true)}
+            />
+        </div>
+
+        {/* Show header button when hidden */}
+        {headerHidden && (
+            <button
+                type="button"
+                onClick={() => setHeaderHidden(false)}
+                className="absolute top-2 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-white border border-neutral-200 rounded-full text-xs text-neutral-500 hover:text-neutral-900 hover:border-neutral-300 transition-all shadow-sm"
+            >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block mr-1">
+                    <polyline points="6 9 12 15 18 9" />
+                </svg>
+                Show header
+            </button>
+        )}
+
         <div className="flex flex-1 min-h-0 overflow-hidden">
             <div className="relative flex-1 min-h-0 min-w-0 overflow-hidden">
             {!isFullyLoaded && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#EAEBD6]">
-                <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#465775] border-t-transparent" />
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-neutral-50">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900" />
                 </div>
             )}
             <MindmapCanvas mindmapId={mindmapId} onAddChild={handleAddChild} />
@@ -122,7 +149,7 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
         </div>
         {error && (
             <div className="pointer-events-none fixed inset-x-0 bottom-4 z-20 flex justify-center">
-            <div className="pointer-events-auto rounded-md bg-red-900/80 px-3 py-1 text-xs text-red-100 shadow">
+            <div className="pointer-events-auto rounded-md bg-red-500/90 px-3 py-1.5 text-xs text-white shadow-lg">
                 {error}
             </div>
             </div>

@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useMindmapStore } from "@/lib/store";
 import { Panel } from "@/components/ui/panel";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import type { CollaboratorResponse } from "@/lib/types";
 
@@ -106,18 +105,18 @@ export function NodeSidePanel({
 
   if (!selectedNode) {
     return (
-      <div className="h-full border-l border-[#3a4a5e] bg-[#465775] p-4 text-sm text-slate-200">
+      <div className="h-full border-l border-neutral-200 bg-white p-4 text-sm text-neutral-500">
         Select a node to edit its details.
       </div>
     );
   }
 
   return (
-    <div className="h-full border-l border-[#3a4a5e] bg-[#465775] p-4">
-      <Panel title="Node details" className="flex h-full flex-col bg-[#3a4a5e]">
+    <div className="h-full border-l border-neutral-200 bg-white p-4">
+      <Panel title="Node details" className="flex h-full flex-col">
         <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
-          <div className="space-y-1">
-            <label className="block text-xs font-medium text-slate-200">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-medium text-neutral-700">
               Title
             </label>
             <Input
@@ -126,15 +125,16 @@ export function NodeSidePanel({
               onChange={(e) => setTitle(e.target.value)}
               onBlur={handleSave}
               placeholder="Node title"
+              className="bg-neutral-50 border-neutral-200 focus:border-neutral-400"
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="block text-xs font-medium text-slate-200">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-medium text-neutral-700">
               Content
             </label>
             <textarea
-              className="min-h-[120px] w-full rounded-md border border-[#2a3a4e] bg-white px-3 py-2 text-xs text-black outline-none focus:border-black focus:ring-0"
+              className="min-h-[120px] w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-900 outline-none focus:border-neutral-400 focus:ring-0 resize-none"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               onBlur={handleSave}
@@ -142,43 +142,41 @@ export function NodeSidePanel({
             />
           </div>
 
-          <div className="mt-1 flex justify-end">
-            <Button
+          <div className="flex justify-end">
+            <button
               type="button"
-              variant="secondary"
-              className="h-7 px-3 text-[11px]"
+              className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
               onClick={onOpenAISuggestions}
               disabled={!selectedNode}
             >
               AI suggestions
-            </Button>
+            </button>
           </div>
 
-          <div className="mt-2 space-y-1 border-t border-[#2a3a4e] pt-3">
+          <div className="space-y-2 border-t border-neutral-100 pt-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-200">Votes</span>
-              <Button
+              <span className="text-xs font-medium text-neutral-700">Votes</span>
+              <button
                 type="button"
-                variant="secondary"
-                className="h-7 px-3 text-[11px]"
+                className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
                 onClick={() => toggleVote(selectedNode)}
                 disabled={!currentUser}
               >
                 {hasVoted ? "Unvote" : "Vote"} · {selectedNode.vote_count}
-              </Button>
+              </button>
             </div>
 
             {loadingVoters && (
-              <div className="text-[11px] text-slate-500">
+              <div className="text-[11px] text-neutral-400">
                 Loading voters…
               </div>
             )}
             {votersError && (
-              <div className="text-[11px] text-red-300">{votersError}</div>
+              <div className="text-[11px] text-red-500">{votersError}</div>
             )}
 
             {!loadingVoters && voterLabels.length > 0 && (
-              <ul className="mt-1 space-y-0.5 text-[11px] text-slate-300">
+              <ul className="mt-1 space-y-0.5 text-[11px] text-neutral-500">
                 {voterLabels.map((label, index) => (
                   <li key={`${label}-${index}`}>{label}</li>
                 ))}
@@ -186,20 +184,19 @@ export function NodeSidePanel({
             )}
 
             {!loadingVoters && voterLabels.length === 0 && (
-              <div className="text-[11px] text-slate-500">No votes yet.</div>
+              <div className="text-[11px] text-neutral-400">No votes yet.</div>
             )}
           </div>
 
         </div>
-        <div className="mt-3 border-t border-[#2a3a4e] pt-3">
-          <Button
+        <div className="mt-4 border-t border-neutral-100 pt-4">
+          <button
             type="button"
-            variant="secondary"
-            className="h-8 w-full px-3 text-[11px] text-red-300 border-red-500/60 hover:text-red-200 hover:border-red-400"
+            className="w-full text-xs text-neutral-400 hover:text-red-500 transition-colors"
             onClick={handleDelete}
           >
             Delete node
-          </Button>
+          </button>
         </div>
       </Panel>
     </div>
