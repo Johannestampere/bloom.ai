@@ -86,28 +86,49 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
 
   async createMindmap(title: string) {
     set({ error: null });
+    // Optimistic update: add to UI immediately
+    const tempId = -Date.now();
+    const optimisticMindmap: MindMapListItem = {
+      id: tempId,
+      title,
+      node_count: 0,
+      total_collaborators: 1,
+      created_at: new Date().toISOString(),
+    };
+    set((state) => ({
+      mindmaps: [optimisticMindmap, ...state.mindmaps],
+    }));
     try {
       const { id } = await api.createMindmap({ title });
+      // Replace optimistic with real data
       await get().fetchMindmaps();
     } catch (err: any) {
-      set({ error: err.message ?? "Failed to create mindmap" });
+      // Rollback on error
+      set((state) => ({
+        mindmaps: state.mindmaps.filter((m) => m.id !== tempId),
+        error: err.message ?? "Failed to create mindmap",
+      }));
     }
   },
 
   async deleteMindmap(id: number) {
     set({ error: null });
+    // Optimistic update: remove from UI immediately
+    const previousMindmaps = get().mindmaps;
+    const previousNodes = get().nodesByMindmapId;
+    set((state) => ({
+      mindmaps: state.mindmaps.filter((m) => m.id !== id),
+      nodesByMindmapId: Object.fromEntries(
+        Object.entries(state.nodesByMindmapId).filter(
+          ([key]) => Number(key) !== id
+        )
+      ),
+    }));
     try {
       await api.deleteMindmap(id);
-      set((state) => ({
-        mindmaps: state.mindmaps.filter((m) => m.id !== id),
-        nodesByMindmapId: Object.fromEntries(
-          Object.entries(state.nodesByMindmapId).filter(
-            ([key]) => Number(key) !== id
-          )
-        ),
-      }));
     } catch (err: any) {
-      set({ error: err.message ?? "Failed to delete mindmap" });
+      // Rollback on error
+      set({ mindmaps: previousMindmaps, nodesByMindmapId: previousNodes, error: err.message ?? "Failed to delete mindmap" });
     }
   },
 

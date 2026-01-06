@@ -50,10 +50,6 @@ export default function DashboardPage() {
   };
 
   const handleDelete = async (id: number, name: string) => {
-    const ok = window.confirm(
-      `Delete “${name}” and all its nodes? This cannot be undone.`
-    );
-    if (!ok) return;
     await deleteMindmap(id);
   };
 

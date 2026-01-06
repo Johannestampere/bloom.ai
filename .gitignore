@@ -94,3 +94,6 @@ backend/app/api/auth/routes/__pycache__
 backend/app/api/auth/schemas/__pycache__
 backend/app/api/auth/utils/__pycache__
 backend/app/schemas/__pycache__
+
+
+DEPLOY.txt
