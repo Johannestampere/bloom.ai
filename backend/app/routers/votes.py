@@ -5,6 +5,7 @@ from ..core.database import get_db
 from ..models import MindMap, Node, Vote
 from ..schemas.mindmap import VoteResponse, SuccessResponse
 from ..middleware.auth import get_current_user_id
+from .collaborators import check_mindmap_access
 
 router = APIRouter(prefix="/api", tags=["votes"])
 
@@ -21,17 +22,17 @@ async def vote_on_node(
     Vote on a specific node
     """
     try:
-        # Verify node exists and user has access through mindmap
-        node = db.query(Node).join(MindMap).filter(
-            Node.id == node_id,
-            MindMap.owner_id == current_user_id
-        ).first()
+        # Get the node first
+        node = db.query(Node).filter(Node.id == node_id).first()
 
         if not node:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Node not found"
             )
+
+        # Verify user has access (owner or any collaborator can vote)
+        check_mindmap_access(node.mindmap_id, current_user_id, db)
 
         # Check if user already voted on this node
         existing_vote = db.query(Vote).filter(
@@ -81,17 +82,17 @@ async def remove_vote_from_node(
     Remove vote from a specific node
     """
     try:
-        # Verify node exists and user has access through mindmap
-        node = db.query(Node).join(MindMap).filter(
-            Node.id == node_id,
-            MindMap.owner_id == current_user_id
-        ).first()
+        # Get the node first
+        node = db.query(Node).filter(Node.id == node_id).first()
 
         if not node:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Node not found"
             )
+
+        # Verify user has access (owner or any collaborator can remove their vote)
+        check_mindmap_access(node.mindmap_id, current_user_id, db)
 
         # Find existing vote
         existing_vote = db.query(Vote).filter(
@@ -133,17 +134,17 @@ async def get_node_votes(
     Get all votes for a specific node
     """
     try:
-        # Verify node exists and user has access through mindmap
-        node = db.query(Node).join(MindMap).filter(
-            Node.id == node_id,
-            MindMap.owner_id == current_user_id
-        ).first()
+        # Get the node first
+        node = db.query(Node).filter(Node.id == node_id).first()
 
         if not node:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Node not found"
             )
+
+        # Verify user has access (owner or any collaborator can view votes)
+        check_mindmap_access(node.mindmap_id, current_user_id, db)
 
         # Get all votes for this node
         votes = db.query(Vote).filter(Vote.node_id == node_id).all()
@@ -179,17 +180,8 @@ async def get_mindmap_vote_summary(
     Get vote summary for all nodes in a mindmap
     """
     try:
-        # Verify mindmap ownership
-        mindmap = db.query(MindMap).filter(
-            MindMap.id == mindmap_id,
-            MindMap.owner_id == current_user_id
-        ).first()
-
-        if not mindmap:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Mindmap not found"
-            )
+        # Verify user has access (owner or any collaborator)
+        check_mindmap_access(mindmap_id, current_user_id, db)
 
         # Get vote summary for all nodes in this mindmap
         vote_summary = db.query(
@@ -236,17 +228,8 @@ async def get_popular_nodes(
     Get the most popular nodes (highest voted) in a mindmap
     """
     try:
-        # Verify mindmap ownership
-        mindmap = db.query(MindMap).filter(
-            MindMap.id == mindmap_id,
-            MindMap.owner_id == current_user_id
-        ).first()
-
-        if not mindmap:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Mindmap not found"
-            )
+        # Verify user has access (owner or any collaborator)
+        check_mindmap_access(mindmap_id, current_user_id, db)
 
         # Get nodes ordered by vote count
         popular_nodes = db.query(
@@ -304,17 +287,8 @@ async def get_vote_analytics(
     Get detailed vote analytics for a mindmap
     """
     try:
-        # Verify mindmap ownership
-        mindmap = db.query(MindMap).filter(
-            MindMap.id == mindmap_id,
-            MindMap.owner_id == current_user_id
-        ).first()
-
-        if not mindmap:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Mindmap not found"
-            )
+        # Verify user has access (owner or any collaborator)
+        check_mindmap_access(mindmap_id, current_user_id, db)
 
         # Get total vote counts
         total_votes = db.query(Vote).join(Node).filter(

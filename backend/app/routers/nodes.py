@@ -13,6 +13,7 @@ from ..middleware.auth import get_current_user_id
 from ..utils import layout
 from ..services.ai_context import build_branch_context
 from ..services.ai import generate_node_suggestions
+from .collaborators import check_mindmap_access
 
 router = APIRouter(prefix="/api", tags=["nodes"])
 
@@ -30,17 +31,8 @@ async def create_node(
     Create a new node in a mindmap
     """
     try:
-        # Verify mindmap ownership
-        mindmap = db.query(MindMap).filter(
-            MindMap.id == mindmap_id,
-            MindMap.owner_id == current_user_id
-        ).first()
-
-        if not mindmap:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Mindmap not found"
-            )
+        # Verify user has access (owner or editor collaborator)
+        mindmap = check_mindmap_access(mindmap_id, current_user_id, db, required_role="editor")
 
         # Verify parent node exists if specified
         if node_data.parent_id:
@@ -116,17 +108,8 @@ async def get_mindmap_nodes(
     Get all nodes for a specific mindmap
     """
     try:
-        # Verify mindmap ownership
-        mindmap = db.query(MindMap).filter(
-            MindMap.id == mindmap_id,
-            MindMap.owner_id == current_user_id
-        ).first()
-
-        if not mindmap:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Mindmap not found"
-            )
+        # Verify user has access (owner or any collaborator)
+        check_mindmap_access(mindmap_id, current_user_id, db)
 
         # Get all nodes for this mindmap
         nodes = db.query(Node).filter(
@@ -175,17 +158,17 @@ async def get_node(
     Get a specific node
     """
     try:
-        # Get node and verify ownership through mindmap
-        node = db.query(Node).join(MindMap).filter(
-            Node.id == node_id,
-            MindMap.owner_id == current_user_id
-        ).first()
+        # Get the node first
+        node = db.query(Node).filter(Node.id == node_id).first()
 
         if not node:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Node not found"
             )
+
+        # Verify user has access (owner or any collaborator)
+        check_mindmap_access(node.mindmap_id, current_user_id, db)
 
         # Get vote information
         votes = db.query(Vote).filter(Vote.node_id == node.id).all()
@@ -228,17 +211,17 @@ async def update_node(
     Update a node
     """
     try:
-        # Get node and verify ownership through mindmap
-        node = db.query(Node).join(MindMap).filter(
-            Node.id == node_id,
-            MindMap.owner_id == current_user_id
-        ).first()
+        # Get the node first
+        node = db.query(Node).filter(Node.id == node_id).first()
 
         if not node:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Node not found"
             )
+
+        # Verify user has access (owner or editor collaborator)
+        check_mindmap_access(node.mindmap_id, current_user_id, db, required_role="editor")
 
         # Verify the parent node exists if being updated
         if node_data.parent_id is not None:
@@ -318,17 +301,17 @@ async def delete_node(
     Delete a node and all its children
     """
     try:
-        # Get node and verify ownership through mindmap
-        node = db.query(Node).join(MindMap).filter(
-            Node.id == node_id,
-            MindMap.owner_id == current_user_id
-        ).first()
+        # Get the node first
+        node = db.query(Node).filter(Node.id == node_id).first()
 
         if not node:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Node not found"
             )
+
+        # Verify user has access (owner or editor collaborator)
+        check_mindmap_access(node.mindmap_id, current_user_id, db, required_role="editor")
 
         # Store node content for a response message
         node_content = node.content
@@ -366,13 +349,14 @@ async def suggest_ai_nodes(
     Generate AI node suggestions for a selected node.
     Suggestions are NOT persisted until the user accepts them.
     """
-    node = db.query(Node).join(MindMap).filter(
-        Node.id == node_id,
-        MindMap.owner_id == current_user_id
-    ).first()
+    # Get the node first
+    node = db.query(Node).filter(Node.id == node_id).first()
 
     if not node:
         raise HTTPException(status_code=404, detail="Node not found")
+
+    # Verify user has access (owner or any collaborator can request suggestions)
+    check_mindmap_access(node.mindmap_id, current_user_id, db)
 
     context_nodes = build_branch_context(db, node_id)
 
