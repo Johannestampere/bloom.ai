@@ -9,6 +9,7 @@ from ..schemas.mindmap import (
     MindMapListResponse, SuccessResponse
 )
 from ..middleware.auth import get_current_user_id
+from .collaborators import check_mindmap_access
 
 router = APIRouter(prefix="/api/mindmaps", tags=["mindmaps"])
 
@@ -157,19 +158,13 @@ async def get_mindmap_data(
     Get a specific mindmap with all its nodes
     """
     try:
+        # Verify user has access (owner or any collaborator)
+        check_mindmap_access(mindmap_id, current_user_id, db)
+
         # Fetch mindmap with nodes
         mindmap = db.query(MindMap).options(
             joinedload(MindMap.nodes)
-        ).filter(
-            MindMap.id == mindmap_id,
-            MindMap.owner_id == current_user_id
-        ).first()
-
-        if not mindmap:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Mindmap not found"
-            )
+        ).filter(MindMap.id == mindmap_id).first()
 
         # Convert nodes to a response format
         nodes_response = []
