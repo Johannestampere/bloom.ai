@@ -1,6 +1,7 @@
 export type MindMapListItem = {
   id: number;
   title: string;
+  owner_id: string;
   node_count: number;
   total_collaborators: number;
   created_at: string;

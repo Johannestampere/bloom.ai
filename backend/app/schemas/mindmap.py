@@ -145,6 +145,7 @@ class MindMapResponse(MindMapBase):
 class MindMapListResponse(BaseModel):
     id: int
     title: str
+    owner_id: UUID
     node_count: int = 0
     total_collaborators: int = 0
     created_at: datetime

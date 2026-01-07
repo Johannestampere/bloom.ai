@@ -88,9 +88,11 @@ export const useMindmapStore = create<MindmapState>((set, get) => ({
     set({ error: null });
     // Optimistic update: add to UI immediately
     const tempId = -Date.now();
+    const currentUserId = get().currentUser?.id ?? "";
     const optimisticMindmap: MindMapListItem = {
       id: tempId,
       title,
+      owner_id: currentUserId,
       node_count: 0,
       total_collaborators: 1,
       created_at: new Date().toISOString(),

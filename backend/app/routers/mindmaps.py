@@ -133,6 +133,7 @@ async def get_all_mindmaps(
             mindmap_dict = {
                 "id": mindmap.id,
                 "title": mindmap.name,
+                "owner_id": mindmap.owner_id,
                 "node_count": node_count,
                 "total_collaborators": total_collaborators,
                 "created_at": mindmap.created_at
