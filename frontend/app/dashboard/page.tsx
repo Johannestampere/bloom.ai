@@ -86,37 +86,49 @@ export default function DashboardPage() {
         )}
 
         <div className="grid gap-3">
-          {mindmaps.map((m) => (
-            <div
-              key={m.id}
-              className="group flex items-center justify-between p-4 bg-white rounded-lg border border-neutral-200 hover:border-neutral-300 cursor-pointer transition-colors"
-              onClick={() => router.push(`/mindmaps/${m.id}`)}
-            >
-              <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium text-neutral-900">
-                  {m.title}
-                </span>
-                <span className="text-xs text-neutral-500">
-                  {m.node_count} node{m.node_count === 1 ? "" : "s"} · {m.total_collaborators} collaborator{m.total_collaborators === 1 ? "" : "s"}
-                </span>
+          {mindmaps.map((m) => {
+            const isOptimistic = m.id < 0;
+            return (
+              <div
+                key={m.id}
+                className={`group flex items-center justify-between p-4 bg-white rounded-lg border border-neutral-200 transition-colors ${
+                  isOptimistic
+                    ? "opacity-60 cursor-wait"
+                    : "hover:border-neutral-300 cursor-pointer"
+                }`}
+                onClick={() => !isOptimistic && router.push(`/mindmaps/${m.id}`)}
+              >
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-sm font-medium text-neutral-900">
+                    {m.title}
+                    {isOptimistic && (
+                      <span className="ml-2 text-xs text-neutral-400">Creating...</span>
+                    )}
+                  </span>
+                  <span className="text-xs text-neutral-500">
+                    {m.node_count} node{m.node_count === 1 ? "" : "s"} · {m.total_collaborators} collaborator{m.total_collaborators === 1 ? "" : "s"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="text-xs text-neutral-400 hidden sm:inline">
+                    {new Date(m.created_at).toLocaleDateString()}
+                  </span>
+                  {!isOptimistic && (
+                    <button
+                      type="button"
+                      className="hover:cursor-pointer text-xs text-neutral-400 hover:text-red-800 hover:text-[14px] opacity-0 group-hover:opacity-100 transition-all"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(m.id, m.title);
+                      }}
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="text-xs text-neutral-400 hidden sm:inline">
-                  {new Date(m.created_at).toLocaleDateString()}
-                </span>
-                <button
-                  type="button"
-                  className="hover:cursor-pointer text-xs text-neutral-400 hover:text-red-800 hover:text-[14px] opacity-0 group-hover:opacity-100 transition-all"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(m.id, m.title);
-                  }}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {mindmaps.length === 0 && !loading && hasLoadedOnce && (
