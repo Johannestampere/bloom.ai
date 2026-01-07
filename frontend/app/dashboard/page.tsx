@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { useMindmapStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { InvitationsPanel } from "@/components/dashboard/InvitationsPanel";
 
 export default function DashboardPage() {
   const router = useRouter();
   const mindmaps = useMindmapStore((state) => state.mindmaps);
+  const invitations = useMindmapStore((state) => state.invitations);
   const createMindmap = useMindmapStore((state) => state.createMindmap);
   const deleteMindmap = useMindmapStore((state) => state.deleteMindmap);
   const currentUser = useMindmapStore((state) => state.currentUser);
@@ -24,7 +26,10 @@ export default function DashboardPage() {
 
     const load = async () => {
       try {
-        await useMindmapStore.getState().fetchMindmaps();
+        await Promise.all([
+          useMindmapStore.getState().fetchMindmaps(),
+          useMindmapStore.getState().fetchInvitations(),
+        ]);
       } catch {
         // error is already stored in Zustand
       } finally {
@@ -84,6 +89,8 @@ export default function DashboardPage() {
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900" />
           </div>
         )}
+
+        <InvitationsPanel invitations={invitations} />
 
         <div className="grid gap-3">
           {mindmaps.map((m) => {
