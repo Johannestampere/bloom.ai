@@ -84,23 +84,17 @@ export function MindmapHeader({
 
     const collaboratorCount = mindmap?.total_collaborators ?? 0;
 
-    // Build list of users for avatar display (owner + accepted collaborators)
+    // Build list of users for avatar display
     const avatarUsers = useMemo(() => {
         const users: Array<{ id: string; name?: string | null; email?: string | null }> = [];
 
-        // Add owner first (from mindmap data, we only have owner_id)
-        if (mindmap && currentUser) {
-            // If current user is owner, add them with their info
-            if (mindmap.owner_id === currentUser.id) {
-                users.push({
-                    id: currentUser.id,
-                    name: currentUser.username,
-                    email: currentUser.email,
-                });
-            } else {
-                // Owner is someone else - we don't have their name, just ID
-                users.push({ id: mindmap.owner_id });
-            }
+        // Always add current user first
+        if (currentUser) {
+            users.push({
+                id: currentUser.id,
+                name: currentUser.username,
+                email: currentUser.email,
+            });
         }
 
         // Add accepted collaborators
@@ -115,7 +109,7 @@ export function MindmapHeader({
         }
 
         return users;
-    }, [mindmap, currentUser, collaborators]);
+    }, [currentUser, collaborators]);
 
     const roleLabel = useMemo(() => {
         if (!mindmap || !currentUser) return null;
