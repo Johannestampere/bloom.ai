@@ -26,7 +26,7 @@ router = APIRouter(prefix="/api", tags=["collaborators"])
 # Helper function to check if user owns or has access to mindmap
 def check_mindmap_access(
         mindmap_id: int,
-        user_id: UUID,
+        user_id: str,
         db: Session,
         required_role: str = None
 ) -> MindMap:
@@ -41,14 +41,17 @@ def check_mindmap_access(
             detail="Mindmap not found"
         )
 
+    # Convert user_id to UUID for comparison
+    user_uuid = UUID(user_id) if isinstance(user_id, str) else user_id
+
     # Check if user is the owner
-    if mindmap.owner_id == user_id:
+    if mindmap.owner_id == user_uuid:
         return mindmap
 
     # Check if user is a collaborator
     collaboration = db.query(Collaborator).filter(
         Collaborator.mindmap_id == mindmap_id,
-        Collaborator.user_id == user_id,
+        Collaborator.user_id == user_uuid,
         Collaborator.status == "accepted"
     ).first()
 
