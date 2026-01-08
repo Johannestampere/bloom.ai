@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useState, useRef, KeyboardEvent } from "react";
 import { useMindmapStore } from "@/lib/store";
 import { api } from "@/lib/api";
-import type { MindMapDetail } from "@/lib/types";
+import type { MindMapDetail, CollaboratorResponse } from "@/lib/types";
 import { Input } from "@/components/ui/input";
+import { AvatarStack } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 type MindmapHeaderProps = {
@@ -29,6 +30,7 @@ export function MindmapHeader({
     const fetchMindmaps = useMindmapStore((state) => state.fetchMindmaps);
 
     const [mindmap, setMindmap] = useState<MindMapDetail | null>(null);
+    const [collaborators, setCollaborators] = useState<CollaboratorResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -40,12 +42,16 @@ export function MindmapHeader({
         let mounted = true;
         setLoading(true);
         setError(null);
-        api
-        .getMindmap(mindmapId)
-        .then((data) => {
+
+        Promise.all([
+            api.getMindmap(mindmapId),
+            api.getCollaborators(mindmapId),
+        ])
+        .then(([mindmapData, collabData]) => {
             if (!mounted) return;
-            setMindmap(data);
-            setTitleInput(data.title);
+            setMindmap(mindmapData);
+            setTitleInput(mindmapData.title);
+            setCollaborators(collabData.collaborators);
             setLoading(false);
         })
         .catch((err: any) => {
@@ -77,6 +83,39 @@ export function MindmapHeader({
     }, [nodesByMindmapId, mindmapId, mindmap]);
 
     const collaboratorCount = mindmap?.total_collaborators ?? 0;
+
+    // Build list of users for avatar display (owner + accepted collaborators)
+    const avatarUsers = useMemo(() => {
+        const users: Array<{ id: string; name?: string | null; email?: string | null }> = [];
+
+        // Add owner first (from mindmap data, we only have owner_id)
+        if (mindmap && currentUser) {
+            // If current user is owner, add them with their info
+            if (mindmap.owner_id === currentUser.id) {
+                users.push({
+                    id: currentUser.id,
+                    name: currentUser.username,
+                    email: currentUser.email,
+                });
+            } else {
+                // Owner is someone else - we don't have their name, just ID
+                users.push({ id: mindmap.owner_id });
+            }
+        }
+
+        // Add accepted collaborators
+        for (const collab of collaborators) {
+            if (collab.status === "accepted" && !users.some(u => u.id === collab.user_id)) {
+                users.push({
+                    id: collab.user_id,
+                    name: collab.user_name,
+                    email: collab.user_email,
+                });
+            }
+        }
+
+        return users;
+    }, [mindmap, currentUser, collaborators]);
 
     const roleLabel = useMemo(() => {
         if (!mindmap || !currentUser) return null;
@@ -191,9 +230,12 @@ export function MindmapHeader({
                     )}
                 </div>
 
-                {/* Right: collaborators */}
+                {/* Right: avatars + collaborators */}
                 <div className="flex w-48 flex-col items-end text-xs text-neutral-500">
                     <div className="flex items-center gap-3">
+                        {avatarUsers.length > 0 && (
+                            <AvatarStack users={avatarUsers} max={4} size="sm" />
+                        )}
                         {roleLabel && <span>{roleLabel}</span>}
                         <button
                             type="button"

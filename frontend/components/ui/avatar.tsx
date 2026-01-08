@@ -26,13 +26,24 @@ function getColorFromId(id: string): typeof AVATAR_COLORS[0] {
 
 function getInitials(name: string | null | undefined, email: string | null | undefined): string {
   if (name) {
-    const parts = name.trim().split(/\s+/);
+    // Remove parentheses suffix like "(9178711c)" from username
+    const cleanName = name.replace(/\s*\([^)]*\)\s*$/, "").trim();
+    // Split into words and filter to only get alphabetic parts
+    const parts = cleanName.split(/\s+/).filter(p => /^[a-zA-Z]/.test(p));
     if (parts.length >= 2) {
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
-    return name.slice(0, 2).toUpperCase();
+    if (parts.length === 1 && parts[0].length >= 2) {
+      return parts[0].slice(0, 2).toUpperCase();
+    }
   }
   if (email) {
+    // Get first letter before @ and first letter of domain
+    const atIndex = email.indexOf("@");
+    if (atIndex > 0) {
+      const localPart = email.slice(0, atIndex);
+      return localPart.slice(0, 2).toUpperCase();
+    }
     return email.slice(0, 2).toUpperCase();
   }
   return "??";
