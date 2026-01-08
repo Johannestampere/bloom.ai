@@ -50,39 +50,30 @@ class AuthMiddleware:
             if not user:
                 email = payload.get("email") or ""
                 meta = payload.get("user_metadata") or {}
-                username = (
+                base_username = (
                     meta.get("username")
                     or meta.get("full_name")
                     or email
                     or user_id
                 )
 
-                existing = None
-                if email:
-                    existing = (
-                        db.query(User)
-                        .filter(User.email == email)
-                        .first()
-                    )
-                if not existing:
-                    existing = (
-                        db.query(User)
-                        .filter(User.username == username)
-                        .first()
-                    )
-
+                # Ensure username is unique by appending suffix if needed
+                username = base_username
+                existing = db.query(User).filter(User.username == username).first()
                 if existing:
-                    user = existing
-                else:
-                    user = User(
-                        id=user_id,
-                        email=email,
-                        username=username,
-                        hashed_password="supabase-oauth",
-                    )
-                    db.add(user)
-                    db.commit()
-                    db.refresh(user)
+                    # Append short unique suffix from user_id
+                    username = f"{base_username} ({user_id[:8]})"
+
+                # Create new user with Supabase user_id as primary key
+                user = User(
+                    id=user_id,
+                    email=email,
+                    username=username,
+                    hashed_password="supabase-oauth",
+                )
+                db.add(user)
+                db.commit()
+                db.refresh(user)
 
             return str(user.id)
 
