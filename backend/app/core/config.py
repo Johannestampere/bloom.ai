@@ -12,5 +12,7 @@ class Settings(BaseSettings):
     SUPABASE_ANON_KEY: str
     SUPABASE_JWT_SECRET: str
     OPENAI_API_KEY: str
+    REDIS_URL: str = "redis://localhost:6379"
+    AI_RATE_LIMIT_PER_DAY: int = 5
 
 settings = Settings()

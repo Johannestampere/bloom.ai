@@ -20,9 +20,17 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(
-      `Request failed (${res.status} ${res.statusText}) for ${path}: ${text}`
-    );
+    // Try to parse JSON error response and extract detail
+    let errorMessage = `Request failed (${res.status} ${res.statusText})`;
+    try {
+      const json = JSON.parse(text);
+      if (json.detail) {
+        errorMessage = json.detail;
+      }
+    } catch {
+      // Not JSON, use default message
+    }
+    throw new Error(errorMessage);
   }
 
   return (await res.json()) as T;

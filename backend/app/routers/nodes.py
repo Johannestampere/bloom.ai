@@ -13,6 +13,7 @@ from ..middleware.auth import get_current_user_id
 from ..utils import layout
 from ..services.ai_context import build_branch_context
 from ..services.ai import generate_node_suggestions
+from ..services.rate_limit import check_ai_rate_limit, increment_ai_usage, get_remaining_ai_uses
 from .collaborators import check_mindmap_access
 
 router = APIRouter(prefix="/api", tags=["nodes"])
@@ -348,7 +349,18 @@ async def suggest_ai_nodes(
     """
     Generate AI node suggestions for a selected node.
     Suggestions are NOT persisted until the user accepts them.
+    Rate limited to 5 requests per user per day.
     """
+    # Check rate limit first
+    is_allowed, current_count, limit = check_ai_rate_limit(current_user_id)
+    if not is_allowed:
+        remaining = get_remaining_ai_uses(current_user_id)
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Daily AI limit reached ({limit} per day). Try again tomorrow.",
+            headers={"X-RateLimit-Remaining": str(remaining), "X-RateLimit-Limit": str(limit)}
+        )
+
     # Get the node first
     node = db.query(Node).filter(Node.id == node_id).first()
 
@@ -367,6 +379,9 @@ async def suggest_ai_nodes(
         context_nodes,
         suggestions_count=3
     )
+
+    # Increment usage counter after successful generation
+    increment_ai_usage(current_user_id)
 
     return AISuggestionResponse(
         suggestions=[AISuggestion(**s) for s in raw_suggestions]
