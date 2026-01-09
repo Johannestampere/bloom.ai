@@ -1,3 +1,4 @@
+import json
 from typing import List, Dict
 from ..core.config import settings
 from openai import OpenAI
@@ -27,24 +28,29 @@ The following is a path from the main idea down to a sub-idea:
 
 {context_text}
 
-Generate {suggestions_count} concise child node ideas that could logically branch
-from the LAST item.
+Generate {suggestions_count} child node ideas that could logically branch from the LAST item.
+
+For each idea, provide:
+- title: A concise noun phrase (2-6 words)
+- content: A brief explanation or details (1-2 sentences)
 
 Rules:
-- 2-6 words per idea
-- noun phrases only
-- no explanations
-- no numbering
-- no punctuation at the end
-- no repetition
+- No numbering or bullet points
+- No repetition between ideas
+- Make content actionable and specific
 
-Respond as a plain list, one idea per line.
+Respond as a JSON array with objects containing "title" and "content" fields.
+Example format:
+[
+  {{"title": "Example Title", "content": "Brief explanation of this idea."}},
+  {{"title": "Another Title", "content": "Details about this concept."}}
+]
 """.strip()
 
 
 def generate_node_suggestions(
     context_nodes: List[Dict[str, str]],
-    suggestions_count: int = 5,
+    suggestions_count: int = 3,
     model: str = "gpt-4o-mini"
 ) -> List[Dict[str, str]]:
     """
@@ -59,7 +65,7 @@ def generate_node_suggestions(
     response = client.chat.completions.create(
         model=model,
         messages=[
-            {"role": "system", "content": "You are a concise ideation assistant."},
+            {"role": "system", "content": "You are a concise ideation assistant. Always respond with valid JSON."},
             {"role": "user", "content": prompt},
         ],
         temperature=0.7,
@@ -67,12 +73,30 @@ def generate_node_suggestions(
 
     raw_text = response.choices[0].message.content.strip()
 
-    suggestions = []
+    # Parse JSON response
+    try:
+        # Handle potential markdown code blocks
+        if raw_text.startswith("```"):
+            # Remove markdown code block markers
+            lines = raw_text.split("\n")
+            raw_text = "\n".join(lines[1:-1] if lines[-1] == "```" else lines[1:])
 
-    # Split the raw text into lines and strip any whitespace
-    for line in raw_text.split("\n"):
-        line = line.strip("•- \t")
-        if line:
-            suggestions.append({"title": line})
+        suggestions = json.loads(raw_text)
 
-    return suggestions
+        # Validate structure
+        if isinstance(suggestions, list):
+            return [
+                {"title": s.get("title", ""), "content": s.get("content", "")}
+                for s in suggestions
+                if isinstance(s, dict) and s.get("title")
+            ]
+    except json.JSONDecodeError:
+        # Fallback: try to parse line by line if JSON fails
+        suggestions = []
+        for line in raw_text.split("\n"):
+            line = line.strip("•- \t")
+            if line:
+                suggestions.append({"title": line, "content": ""})
+        return suggestions
+
+    return []
