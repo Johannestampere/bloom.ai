@@ -11,6 +11,26 @@ type CollaboratorsPanelProps = {
   mindmapId: number;
 };
 
+// Map backend error messages to user-friendly messages
+function formatInviteError(message: string): string {
+    if (message.includes("not found")) {
+        return "No user found with this email. They need to sign up first.";
+    }
+    if (message.includes("cannot invite yourself")) {
+        return "You can't invite yourself.";
+    }
+    if (message.includes("already the owner")) {
+        return "This user is already the owner.";
+    }
+    if (message.includes("already a collaborator")) {
+        return "This user is already a collaborator.";
+    }
+    if (message.includes("already been invited") || message.includes("pending")) {
+        return "This user already has a pending invitation.";
+    }
+    return message;
+}
+
 export function CollaboratorsPanel({ mindmapId }: CollaboratorsPanelProps) {
     const inviteCollaborator = useMindmapStore(
         (state) => state.inviteCollaborator
@@ -18,19 +38,20 @@ export function CollaboratorsPanel({ mindmapId }: CollaboratorsPanelProps) {
 
     const [collaborators, setCollaborators] = useState<CollaboratorResponse[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [loadError, setLoadError] = useState<string | null>(null);
+    const [inviteError, setInviteError] = useState<string | null>(null);
     const [email, setEmail] = useState("");
     const [role, setRole] = useState("editor");
     const [inviting, setInviting] = useState(false);
 
     const loadCollaborators = async () => {
         setLoading(true);
-        setError(null);
+        setLoadError(null);
         try {
             const res = await api.getCollaborators(mindmapId);
             setCollaborators(res.collaborators);
         } catch (err: any) {
-            setError(err.message ?? "Failed to load collaborators");
+            setLoadError(err.message ?? "Failed to load collaborators");
         } finally {
             setLoading(false);
         }
@@ -47,16 +68,24 @@ export function CollaboratorsPanel({ mindmapId }: CollaboratorsPanelProps) {
         if (!trimmed) return;
 
         setInviting(true);
-        setError(null);
-        // eslint-disable-next-line no-unused-vars
+        setInviteError(null);
         try {
             await inviteCollaborator(mindmapId, trimmed, role);
             setEmail("");
             await loadCollaborators();
         } catch (err: any) {
-            setError(err.message ?? "Failed to invite collaborator");
+            const message = err.message ?? "Failed to invite collaborator";
+            setInviteError(formatInviteError(message));
         } finally {
             setInviting(false);
+        }
+    };
+
+    // Clear invite error when email changes
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEmail(e.target.value);
+        if (inviteError) {
+            setInviteError(null);
         }
     };
 
@@ -71,10 +100,10 @@ export function CollaboratorsPanel({ mindmapId }: CollaboratorsPanelProps) {
                 <Input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleEmailChange}
                 placeholder="name@example.com"
                 disabled={inviting}
-                className="bg-neutral-50 border-neutral-200 focus:border-neutral-400"
+                className={`bg-neutral-50 border-neutral-200 focus:border-neutral-400 ${inviteError ? "border-red-300" : ""}`}
                 />
             </div>
             <div className="space-y-1.5">
@@ -91,22 +120,27 @@ export function CollaboratorsPanel({ mindmapId }: CollaboratorsPanelProps) {
                 <option value="viewer">Viewer</option>
                 </select>
             </div>
-            <div className="flex justify-end pt-1">
+            <div className="flex flex-col items-end gap-2 pt-1">
                 <button
                 type="submit"
                 disabled={!email.trim() || inviting}
                 className="rounded-md bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-200 transition-colors disabled:bg-neutral-50 disabled:text-neutral-300"
                 >
-                Send invite
+                {inviting ? "Sending…" : "Send invite"}
                 </button>
+                {inviteError && (
+                    <div className="text-xs text-red-500 text-right">
+                        {inviteError}
+                    </div>
+                )}
             </div>
             </form>
 
             {loading && (
             <div className="text-xs text-neutral-400">Loading collaborators…</div>
             )}
-            {error && (
-            <div className="mb-2 text-xs text-red-500">{error}</div>
+            {loadError && (
+            <div className="mb-2 text-xs text-red-500">{loadError}</div>
             )}
 
             {!loading && collaborators.length === 0 && (
@@ -138,5 +172,3 @@ export function CollaboratorsPanel({ mindmapId }: CollaboratorsPanelProps) {
         </div>
     );
 }
-
-

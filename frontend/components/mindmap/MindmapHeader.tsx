@@ -173,7 +173,6 @@ export function MindmapHeader({
     return (
         <div className="border-b border-neutral-200 bg-white px-6 py-3">
             <div className="flex w-full items-center justify-between gap-4">
-                {/* Left: stats + hide button */}
                 <div className="flex w-48 items-center gap-3 text-xs text-neutral-500">
                     {onToggleHidden && (
                         <button
@@ -224,7 +223,6 @@ export function MindmapHeader({
                     )}
                 </div>
 
-                {/* Right: avatars + collaborators */}
                 <div className="flex w-48 flex-col items-end text-xs text-neutral-500">
                     <div className="flex items-center gap-3">
                         {avatarUsers.length > 0 && (

@@ -164,14 +164,14 @@ export function AISuggestionsPanel({
             <div className="mt-4 flex justify-between border-t border-neutral-100 pt-4 text-xs">
                 <button
                     type="button"
-                    className="text-neutral-400 hover:text-neutral-900 transition-colors"
+                    className="rounded-md bg-neutral-100 px-3 py-1.5 font-medium text-neutral-700 hover:bg-neutral-200 transition-colors"
                     onClick={onClose}
                 >
                 Discard
                 </button>
                 <button
                     type="submit"
-                    className="text-neutral-900 font-medium hover:text-neutral-600 transition-colors disabled:text-neutral-300"
+                    className="rounded-md bg-neutral-100 px-3 py-1.5 font-medium text-neutral-700 hover:bg-neutral-200 transition-colors disabled:bg-neutral-50 disabled:text-neutral-300"
                     disabled={!anySelected || submitting}
                 >
                 Add selected

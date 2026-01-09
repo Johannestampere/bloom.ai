@@ -101,7 +101,6 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
 
     return (
         <div className="flex h-full w-full flex-col min-h-0">
-        {/* Header with slide animation */}
         <div
             className={cn(
                 "transition-all duration-300 ease-in-out overflow-hidden",
@@ -118,7 +117,6 @@ export function MindmapPage({ mindmapId }: MindmapPageProps) {
             />
         </div>
 
-        {/* Show header button when hidden */}
         {headerHidden && (
             <button
                 type="button"

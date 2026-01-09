@@ -144,10 +144,10 @@ export function NodeSidePanel({
             />
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-center">
             <button
               type="button"
-              className="rounded-md bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-200 transition-colors disabled:bg-neutral-50 disabled:text-neutral-300"
+              className="rounded-md bg-neutral-800 px-4 py-2 text-xs font-medium text-white hover:bg-neutral-700 transition-colors disabled:bg-neutral-300 disabled:text-neutral-500"
               onClick={onOpenAISuggestions}
               disabled={!selectedNode}
             >
