@@ -9,12 +9,13 @@ import { cn } from "@/lib/utils";
 type MindmapCanvasProps = {
   mindmapId: number;
   onAddChild?: (parentId: number) => void;
+  onNodeSelect?: (nodeId: number | null) => void;
 };
 
 const CANVAS_SIZE = 3000;
 const CANVAS_CENTER = CANVAS_SIZE / 2;
 
-export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
+export function MindmapCanvas({ mindmapId, onAddChild, onNodeSelect }: MindmapCanvasProps) {
   const nodesByMindmapId = useMindmapStore((state) => state.nodesByMindmapId);
   const selectedNodeId = useMindmapStore((state) => state.selectedNodeId);
   const setSelectedNodeId = useMindmapStore((state) => state.setSelectedNodeId);
@@ -73,7 +74,9 @@ export function MindmapCanvas({ mindmapId, onAddChild }: MindmapCanvasProps) {
 
   const handleNodeClick = (id: number, e: MouseEvent) => {
     e.stopPropagation();
-    setSelectedNodeId(id === selectedNodeId ? null : id);
+    const newId = id === selectedNodeId ? null : id;
+    setSelectedNodeId(newId);
+    onNodeSelect?.(newId);
   };
 
   const handleNodeDoubleClick = (id: number, e: MouseEvent) => {

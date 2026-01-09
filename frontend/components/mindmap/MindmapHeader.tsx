@@ -234,10 +234,10 @@ export function MindmapHeader({
                         <button
                             type="button"
                             className={cn(
-                                "text-xs transition-colors",
+                                "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
                                 isCollaboratorsOpen
-                                    ? "text-neutral-900 font-medium"
-                                    : "text-neutral-500 hover:text-neutral-900"
+                                    ? "bg-neutral-200 text-neutral-900"
+                                    : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
                             )}
                             onClick={onToggleCollaborators}
                         >

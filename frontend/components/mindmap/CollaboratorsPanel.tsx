@@ -95,7 +95,7 @@ export function CollaboratorsPanel({ mindmapId }: CollaboratorsPanelProps) {
                 <button
                 type="submit"
                 disabled={!email.trim() || inviting}
-                className="text-xs text-neutral-900 font-medium hover:text-neutral-600 transition-colors disabled:text-neutral-300"
+                className="rounded-md bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-200 transition-colors disabled:bg-neutral-50 disabled:text-neutral-300"
                 >
                 Send invite
                 </button>

@@ -16,7 +16,6 @@ export default function Home() {
 
   return (
     <div className="relative flex h-full w-full items-center justify-center bg-slate-950 text-slate-200 overflow-hidden">
-      {/* Subtle gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-indigo-500/10 rounded-full blur-3xl" />
 

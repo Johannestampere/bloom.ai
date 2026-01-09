@@ -40,7 +40,7 @@ export function AuthButtons() {
     <button
       type="button"
       onClick={handleSignOut}
-      className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
+      className="rounded-md bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-200 transition-colors"
     >
       Sign out
     </button>

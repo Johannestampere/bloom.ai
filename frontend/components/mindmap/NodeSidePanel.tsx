@@ -192,7 +192,7 @@ export function NodeSidePanel({
         <div className="mt-4 border-t border-neutral-100 pt-4">
           <button
             type="button"
-            className="w-full text-xs text-neutral-400 hover:text-red-500 transition-colors"
+            className="rounded-md w-full text-xs text-neutral-400 hover:text-red-500 transition-colors"
             onClick={handleDelete}
           >
             Delete node
