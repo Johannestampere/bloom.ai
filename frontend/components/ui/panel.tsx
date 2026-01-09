@@ -11,7 +11,7 @@ export function Panel({ title, children, className }: PanelProps) {
   return (
     <section className={cn("rounded-lg p-4", className)}>
       {title && (
-        <header className="mb-3 text-xs font-medium uppercase tracking-wide text-neutral-500">
+        <header className="mb-3 text-[14px] font-medium uppercase tracking-wide text-neutral-500">
           {title}
         </header>
       )}

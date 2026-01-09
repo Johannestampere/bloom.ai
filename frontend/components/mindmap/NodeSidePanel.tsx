@@ -86,12 +86,14 @@ export function NodeSidePanel({
   const voterLabels = useMemo(() => {
     if (!selectedNode) return [];
     return selectedNode.user_votes.map((userId) => {
-      const collab = collaborators.find((c) => c.user_id === userId);
-      let label = collab?.user_name || collab?.user_email || userId;
+      // Check if this is the current user first
       if (currentUser && userId === currentUser.id) {
-        label = `${label} (you)`;
+        const name = currentUser.username || currentUser.email || "You";
+        return `${name} (you)`;
       }
-      return label;
+      // Otherwise look up in collaborators
+      const collab = collaborators.find((c) => c.user_id === userId);
+      return collab?.user_name || collab?.user_email || userId;
     });
   }, [selectedNode, collaborators, currentUser]);
 
@@ -125,7 +127,7 @@ export function NodeSidePanel({
               onChange={(e) => setTitle(e.target.value)}
               onBlur={handleSave}
               placeholder="Node title"
-              className="bg-neutral-50 border-neutral-200 focus:border-neutral-400"
+              className="bg-neutral-50 border-neutral-200"
             />
           </div>
 
@@ -145,7 +147,7 @@ export function NodeSidePanel({
           <div className="flex justify-end">
             <button
               type="button"
-              className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
+              className="rounded-md bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-200 transition-colors disabled:bg-neutral-50 disabled:text-neutral-300"
               onClick={onOpenAISuggestions}
               disabled={!selectedNode}
             >
@@ -189,10 +191,10 @@ export function NodeSidePanel({
           </div>
 
         </div>
-        <div className="mt-4 border-t border-neutral-100 pt-4">
+        <div className="mt-4 border-t border-neutral-100 pt-4 flex justify-center">
           <button
             type="button"
-            className="rounded-md w-full text-xs text-neutral-400 hover:text-red-500 transition-colors"
+            className="rounded-md bg-neutral-100 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors"
             onClick={handleDelete}
           >
             Delete node
