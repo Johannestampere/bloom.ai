@@ -16,7 +16,7 @@ router = APIRouter(prefix="/api/mindmaps", tags=["mindmaps"])
 
 # MINDMAP CRUD OPERATIONS
 
-@router.post("/", response_model=MindMapResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=MindMapResponse, status_code=status.HTTP_201_CREATED)
 async def create_mindmap(
         mindmap_data: MindMapCreate,
         current_user_id: str = Depends(get_current_user_id),
@@ -99,7 +99,7 @@ async def create_mindmap(
         )
 
 
-@router.get("/", response_model=List[MindMapListResponse])
+@router.get("", response_model=List[MindMapListResponse])
 async def get_all_mindmaps(
         current_user_id: str = Depends(get_current_user_id),
         db: Session = Depends(get_db),
