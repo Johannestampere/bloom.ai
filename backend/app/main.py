@@ -13,6 +13,7 @@ from .routers import mindmaps, nodes, votes
 
 # Import database
 from .core.database import engine, Base
+from .core.config import settings
 
 
 # Create tables on startup
@@ -35,11 +36,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS middleware - simplified
-
+# CORS middleware - uses FRONTEND_URL from environment
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[settings.FRONTEND_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

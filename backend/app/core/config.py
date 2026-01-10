@@ -14,5 +14,6 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str
     REDIS_URL: str = "redis://localhost:6379"
     AI_RATE_LIMIT_PER_DAY: int = 5
+    FRONTEND_URL: str = "http://localhost:3000"
 
 settings = Settings()
