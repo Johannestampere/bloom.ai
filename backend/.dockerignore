@@ -1,0 +1,17 @@
+# flyctl launch added from .gitignore
+.env
+
+**/backend/.env
+**/backend/.env.local
+**/backend/.env.development.local
+**/backend/.env.test.local
+**/backend/.env.production.local
+**/backend/.env.development
+**/backend/.env.test
+**/backend/.env.production
+
+**/backend/.venv
+**/backend/venv
+
+**/*__pycache__*
+fly.toml
