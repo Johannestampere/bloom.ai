@@ -26,7 +26,7 @@ Create mindmaps with your team, vote on promising directions, and let AI suggest
 - **Minimal, focused UI**  
   Clean interface designed to keep you in flow.
 
-## Tech Stack
+## Tech Stack 
 
 ### Frontend
 - Next.js 15 (App Router)

@@ -310,9 +310,9 @@ export function MindmapCanvas({ mindmapId, onAddChild, onNodeSelect }: MindmapCa
                   onClick={(e) => handleNodeClick(node.id, e)}
                   onDoubleClick={(e) => handleNodeDoubleClick(node.id, e)}
                   className={cn(
-                    "-translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center rounded-full border transition-all",
+                    "-translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center rounded-full border transition-all duration-200",
                     "bg-white text-neutral-900 border-neutral-200",
-                    "hover:border-neutral-300 hover:shadow-sm",
+                    "hover:border-neutral-300 hover:shadow-sm hover:scale-110",
                     voteIndicator,
                     node.is_ai_generated && "border-dashed border-neutral-300",
                     isSelected && "border-neutral-900 shadow-md",

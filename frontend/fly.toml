@@ -7,6 +7,10 @@ app = 'bloom-mindmaps'
 primary_region = 'lhr'
 
 [build]
+  [build.args]
+    NEXT_PUBLIC_SUPABASE_URL = "https://bkjahsglsmvxaxtnxkxo.supabase.co"
+    NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJramFoc2dsc212eGF4dG54a3hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0MDU3MzUsImV4cCI6MjA2Mjk4MTczNX0.9bH7810hCqsXVldqUVlGnCycKLPTHE-8F-YnPpDxpIE"
+    NEXT_PUBLIC_BACKEND_URL = "https://bloom-api.fly.dev"
 
 [env]
   NODE_ENV = 'production'
