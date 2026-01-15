@@ -1,37 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# bloom.ai
 
-## Getting Started
+**AI-powered collaborative mindmapping for teams that want to move fast.**
 
-First, run the development server:
+Turn messy brainstorming into structured execution. bloom.ai helps teams explore ideas in real time, surface the best directions, and move from chaos to clarity.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+**Live:** https://bloom-mindmaps.fly.dev
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## What is bloom.ai?
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+bloom.ai is a real-time collaborative brainstorming platform where AI actively helps you expand, refine, and connect ideas.
 
-## Learn More
+Create mindmaps with your team, vote on promising directions, and let AI suggest new branches when you get stuck. Perfect for hackathons, startups, group projects, and creative sessions.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Key Features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **AI-powered idea expansion**  
+  Generate contextual node suggestions using AI to unblock creative thinking.
 
-## Deploy on Vercel
+- **Real-time collaboration**  
+  Multiple users can edit the same mindmap live with instant sync.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Voting & prioritization**  
+  Upvote strong ideas to visually surface the best concepts.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# mindmap
+- **Minimal, focused UI**  
+  Clean interface designed to keep you in flow.
+
+---
+
+## Tech Stack
+
+### Frontend
+- Next.js 15 (App Router)
+- TypeScript
+- Zustand (global state)
+- Tailwind CSS
+
+### Backend
+- FastAPI
+- PostgreSQL (Supabase)
+- SQLAlchemy ORM
+- Redis (rate limiting)
+- OpenAI API
+
+### Infrastructure
+- Fly.io (containerized deployments)
+- Supabase (auth + database)
+- Upstash (Redis)
+
