@@ -6,15 +6,11 @@ Turn messy brainstorming into structured execution. bloom.ai helps teams explore
 
 **Live:** https://bloom-mindmaps.fly.dev
 
----
-
 ## What is bloom.ai?
 
 bloom.ai is a real-time collaborative brainstorming platform where AI actively helps you expand, refine, and connect ideas.
 
 Create mindmaps with your team, vote on promising directions, and let AI suggest new branches when you get stuck. Perfect for hackathons, startups, group projects, and creative sessions.
-
----
 
 ## Key Features
 
@@ -29,8 +25,6 @@ Create mindmaps with your team, vote on promising directions, and let AI suggest
 
 - **Minimal, focused UI**  
   Clean interface designed to keep you in flow.
-
----
 
 ## Tech Stack
 
@@ -51,4 +45,3 @@ Create mindmaps with your team, vote on promising directions, and let AI suggest
 - Fly.io (containerized deployments)
 - Supabase (auth + database)
 - Upstash (Redis)
-
